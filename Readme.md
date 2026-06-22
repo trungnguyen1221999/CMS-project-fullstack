@@ -4,17 +4,7 @@
 
 - **Clean Architecture** 
 
-**==> picture [99 x 13] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-Design Patterns<br>**----- End of picture text -----**<br>
-
-
-**==> picture [117 x 11] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-● Repository Pattern<br>**----- End of picture text -----**<br>
-
+- **Repository Partern** 
 
 - **Unit of Work** 
 
