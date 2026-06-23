@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Commons;
 
-namespace BlogProject.Core.Domain.Content
+namespace Domain.Cores.Content
 {
     [Table("PostActivityLogs")]
     public class PostActivityLog : AuditableEntity

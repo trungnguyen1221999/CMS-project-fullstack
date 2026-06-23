@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BlogProject.Core.Domain.Content
+namespace Domain.Cores.Content
 {
     [Table("PostTags")]
     [PrimaryKey(nameof(PostId), nameof(TagId))]

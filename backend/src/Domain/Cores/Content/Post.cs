@@ -1,9 +1,9 @@
-﻿using Domain.Commons;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Domain.Commons;
+using Microsoft.EntityFrameworkCore;
 
-namespace BlogProject.Core.Domain.Content
+namespace Domain.Cores.Content
 {
     [Table("Posts")]
     [Index(nameof(Slug), IsUnique = true)]

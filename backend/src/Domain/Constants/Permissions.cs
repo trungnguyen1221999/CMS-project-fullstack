@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System.ComponentModel;
 
 namespace Domain.Constants
 {
@@ -55,7 +52,7 @@ namespace Domain.Constants
             public const string Edit = "Permissions.PostCategories.Edit";
 
             [Description("Delete post categories")]
-            public const string Delete = "Permissions.PostCategories.Delete"; // Đã fix lỗi chính tả 'UsPostCategoriesers' ở đây
+            public const string Delete = "Permissions.PostCategories.Delete";
         }
 
         public static class Posts

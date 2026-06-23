@@ -22,7 +22,7 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Content.Post", b =>
+            modelBuilder.Entity("Domain.Cores.Content.Post", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -113,7 +113,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Content.PostActivityLog", b =>
+            modelBuilder.Entity("Domain.Cores.Content.PostActivityLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -150,7 +150,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("PostActivityLogs");
                 });
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Content.PostCategory", b =>
+            modelBuilder.Entity("Domain.Cores.Content.PostCategory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -192,7 +192,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("PostCategories");
                 });
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Content.PostTag", b =>
+            modelBuilder.Entity("Domain.Cores.Content.PostTag", b =>
                 {
                     b.Property<Guid>("PostId")
                         .HasColumnType("uuid");
@@ -205,7 +205,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("PostTags");
                 });
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Content.Serie", b =>
+            modelBuilder.Entity("Domain.Cores.Content.Serie", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -258,7 +258,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("Series");
                 });
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Content.Tag", b =>
+            modelBuilder.Entity("Domain.Cores.Content.Tag", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

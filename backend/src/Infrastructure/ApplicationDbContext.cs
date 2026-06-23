@@ -1,6 +1,6 @@
-﻿using BlogProject.Core.Domain.Content;
-using BlogProject.Core.Domain.Identity;
-using Domain.Commons;
+﻿using Domain.Commons;
+using Domain.Cores.Content;
+using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

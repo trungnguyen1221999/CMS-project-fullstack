@@ -1,4 +1,4 @@
-﻿using BlogProject.Core.Domain.Identity;
+﻿using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

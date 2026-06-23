@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using BlogProject.Core.Domain.Identity;
 using Domain.Constants;
+using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure;
@@ -12,91 +12,36 @@ public static class DataSeeder
         RoleManager<Role> roleManager
     )
     {
-        // 1. SEED ROLES & PERMISSIONS USING HASHSET FOR OPTIMIZED PERFORMANCE
+        // 1. COMBINE BASE PERMISSIONS FOR EACH CMS ROLE
+        // Prepare HashSet containers to aggregate permissions cleanly without duplication
+
+        // Author = Public Reader + Writing Permissions
+        var authorPermissions = new HashSet<string>(RolePermissions.PublicReader);
+        authorPermissions.UnionWith(RolePermissions.Writing);
+
+        // Editor = Public Reader + Editing/Publishing Permissions (No write permissions assigned)
+        var editorPermissions = new HashSet<string>(RolePermissions.PublicReader);
+        editorPermissions.UnionWith(RolePermissions.Editing);
+
+        // Admin = Full system access (Uses reflection extension to fetch all defined constants)
+        var adminPermissions = typeof(Permissions).GetAllPermissionValues().ToHashSet();
+
+        // User = Public Reader permissions only
+        var userPermissions = new HashSet<string>(RolePermissions.PublicReader);
+
+        // 2. MAP ROLES TO THEIR AGGREGATED PERMISSION SETS
         var rolePermissionsMapping = new Dictionary<
             string,
             (string DisplayName, HashSet<string> AllowedPermissions)
         >
         {
-            {
-                Roles.Admin,
-                (
-                    "System Administrator", // Superuser with full control over the entire CMS
-                    new HashSet<string>
-                    {
-                        Permissions.Dashboard.View,
-                        Permissions.Roles.View,
-                        Permissions.Roles.Create,
-                        Permissions.Roles.Edit,
-                        Permissions.Roles.Delete,
-                        Permissions.Users.View,
-                        Permissions.Users.Create,
-                        Permissions.Users.Edit,
-                        Permissions.Users.Delete,
-                        Permissions.PostCategories.View,
-                        Permissions.PostCategories.Create,
-                        Permissions.PostCategories.Edit,
-                        Permissions.PostCategories.Delete,
-                        Permissions.Posts.View,
-                        Permissions.Posts.Create,
-                        Permissions.Posts.Edit,
-                        Permissions.Posts.Delete,
-                        Permissions.Posts.Approve,
-                        Permissions.Series.View,
-                        Permissions.Series.Create,
-                        Permissions.Series.Edit,
-                        Permissions.Series.Delete,
-                        Permissions.Royalty.View,
-                        Permissions.Royalty.Pay,
-                    }
-                )
-            },
-            {
-                Roles.Editor,
-                (
-                    "Content Editor", // Manages structure, reviews and approves/publishes content
-                    new HashSet<string>
-                    {
-                        Permissions.Dashboard.View,
-                        Permissions.PostCategories.View,
-                        Permissions.PostCategories.Create,
-                        Permissions.PostCategories.Edit,
-                        Permissions.PostCategories.Delete,
-                        Permissions.Posts.View,
-                        Permissions.Posts.Edit,
-                        Permissions.Posts.Delete,
-                        Permissions.Posts.Approve,
-                        Permissions.Series.View,
-                        Permissions.Series.Create,
-                        Permissions.Series.Edit,
-                        Permissions.Series.Delete,
-                        Permissions.Royalty.View,
-                    }
-                )
-            },
-            {
-                Roles.Author,
-                (
-                    "Content Writer / Creator", // Creates and updates their own posts, submits them for review, views earned royalty
-                    new HashSet<string>
-                    {
-                        Permissions.Posts.View,
-                        Permissions.Posts.Create,
-                        Permissions.Posts.Edit,
-                        Permissions.Royalty.View,
-                    }
-                )
-            },
-            {
-                "User", // Assuming you might add Roles.User later, using string literal for now
-                (
-                    "Regular Member / Subscriber", // Public audience, granted read-only access to published content
-                    new HashSet<string> { Permissions.Posts.View }
-                )
-            },
+            { Roles.Admin, ("System Administrator", adminPermissions) },
+            { Roles.Editor, ("Content Editor", editorPermissions) },
+            { Roles.Author, ("Content Writer / Creator", authorPermissions) },
+            { Roles.User, ("Regular Member / Subscriber", userPermissions) },
         };
 
-        // Loop through the mapping to create roles and assign their permissions
+        // 3. LOOP THROUGH MAPPING TO CREATE ROLES AND ASSIGN CLAIMS
         foreach (var mapping in rolePermissionsMapping)
         {
             var roleName = mapping.Key;
@@ -115,6 +60,7 @@ public static class DataSeeder
                 await roleManager.CreateAsync(role);
             }
 
+            // Fetch currently assigned claims for this role to avoid duplicate inserts
             var existingClaims = await roleManager.GetClaimsAsync(role);
 
             // Assign permissions to the role as Role Claims
@@ -127,20 +73,35 @@ public static class DataSeeder
             }
         }
 
-        // 2. SEED USERS & ASSIGN TO RESPECTIVE ROLES
-        await SeedUserAsync(userManager, "admin@cms.com", "admin", "System", "Admin", Roles.Admin);
-        await SeedUserAsync(userManager, "editor@cms.com", "editor", "Kai", "Editor", Roles.Editor);
+        // 4. SEED DEMO ACCOUNTS AND ATTACH ROLES
         await SeedUserAsync(
             userManager,
-            "author@cms.com",
+            "admin@gmail.com",
+            "admin",
+            "System",
+            "Admin",
+            Roles.Admin
+        );
+        await SeedUserAsync(
+            userManager,
+            "editor@gmail.com",
+            "editor",
+            "Kai",
+            "Editor",
+            Roles.Editor
+        );
+        await SeedUserAsync(
+            userManager,
+            "author@gmail.com",
             "author",
             "Nguyen",
             "Author",
             Roles.Author
         );
-        await SeedUserAsync(userManager, "user@cms.com", "user", "John", "Doe", Roles.User);
+        await SeedUserAsync(userManager, "user@gmail.com", "user", "John", "Doe", Roles.User);
     }
 
+    // Helper method to handle automated user registration and role embedding
     private static async Task SeedUserAsync(
         UserManager<User> userManager,
         string email,
@@ -164,10 +125,10 @@ public static class DataSeeder
                 IsActive = true,
                 DateCreated = DateTime.UtcNow,
                 Balance = 0,
-                RoyaltyAmountPerPost = roleName == Roles.Author ? 15 : 0, // 15 per post for authors as default
+                RoyaltyAmountPerPost = roleName == Roles.Author ? 15 : 0, // Default token rate for authors
             };
 
-            // Create user with a strong default password (Identity automatically hashes this)
+            // Identity automatically intercept this string and hashes it safely into the DB
             var result = await userManager.CreateAsync(newUser, "123456");
             if (result.Succeeded)
             {

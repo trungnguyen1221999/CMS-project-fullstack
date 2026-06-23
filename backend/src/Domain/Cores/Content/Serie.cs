@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Commons;
 using Microsoft.EntityFrameworkCore;
 
-namespace BlogProject.Core.Domain.Content
+namespace Domain.Cores.Content
 {
     [Table("Series")]
     [Index(nameof(Slug), IsUnique = true)]

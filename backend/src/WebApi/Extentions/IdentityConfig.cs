@@ -1,4 +1,4 @@
-﻿using BlogProject.Core.Domain.Identity;
+﻿using Domain.Cores.Identity;
 using Infrastructure;
 using Microsoft.AspNetCore.Identity;
 

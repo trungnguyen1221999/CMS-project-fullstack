@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace BlogProject.Core.Domain.Identity
+namespace Domain.Cores.Identity
 {
     public class User : IdentityUser<Guid>
     {
