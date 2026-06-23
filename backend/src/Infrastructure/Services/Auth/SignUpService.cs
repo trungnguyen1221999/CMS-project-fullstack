@@ -9,10 +9,12 @@ namespace Infrastructure.Services.Auth
     public class SignUpService : ISignUpService
     {
         private readonly UserManager<User> _userManager;
+        private readonly RoleManager<Role> _roleManager;
 
-        public SignUpService(UserManager<User> userManager)
+        public SignUpService(UserManager<User> userManager, RoleManager<Role> roleManager)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<SignUpResponseDto> SignUpAsync(SignUpRequestDto request)
@@ -49,7 +51,15 @@ namespace Infrastructure.Services.Auth
                         : errors,
                 };
             }
-
+            var addRole = await _userManager.AddToRoleAsync(user, "User");
+            if (!addRole.Succeeded)
+            {
+                return new SignUpResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorMessage = "Failed to assign role.",
+                };
+            }
             return new SignUpResponseDto { IsSuccess = true };
         }
     }

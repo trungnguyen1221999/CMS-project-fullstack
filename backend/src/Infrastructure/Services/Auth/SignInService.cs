@@ -52,7 +52,7 @@ namespace Infrastructure.Services.Auth
                     ErrorMessage = "Invalid password.",
                 };
             }
-            var token = "";
+            var token = await _tokenService.GenerateAccessToken(existingUser);
             var refreshToken = _tokenService.GenerateRefreshToken();
             var refreshTokenExpiryDays = _configuration.GetValue<int>(
                 "JwtSettings:RefreshTokenExpiryDays"

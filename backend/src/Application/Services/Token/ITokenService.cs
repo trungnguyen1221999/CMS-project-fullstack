@@ -1,8 +1,10 @@
-﻿namespace Application.Services.Token
+﻿using Domain.Cores.Identity;
+
+namespace Application.Services.Token
 {
     public interface ITokenService
     {
-        string GenerateAccessToken();
+        Task<string> GenerateAccessToken(User user);
         string GenerateRefreshToken();
     }
 }
