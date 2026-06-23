@@ -1,6 +1,6 @@
 ﻿using Application.DTOs.Request.Auth;
 using Application.DTOs.Response.Auth;
-using Application.Services;
+using Application.Services.Auth;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 

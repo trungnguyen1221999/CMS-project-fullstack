@@ -274,7 +274,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Identity.Role", b =>
+            modelBuilder.Entity("Domain.Cores.Identity.Role", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -306,7 +306,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("BlogProject.Core.Domain.Identity.User", b =>
+            modelBuilder.Entity("Domain.Cores.Identity.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -327,7 +327,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("DateCreated")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedAt");
 
                     b.Property<DateTime?>("Dob")
                         .HasColumnType("timestamp with time zone");
@@ -520,7 +521,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("BlogProject.Core.Domain.Identity.Role", null)
+                    b.HasOne("Domain.Cores.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -529,7 +530,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("BlogProject.Core.Domain.Identity.User", null)
+                    b.HasOne("Domain.Cores.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -538,7 +539,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("BlogProject.Core.Domain.Identity.User", null)
+                    b.HasOne("Domain.Cores.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -547,13 +548,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("BlogProject.Core.Domain.Identity.Role", null)
+                    b.HasOne("Domain.Cores.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BlogProject.Core.Domain.Identity.User", null)
+                    b.HasOne("Domain.Cores.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -562,7 +563,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("BlogProject.Core.Domain.Identity.User", null)
+                    b.HasOne("Domain.Cores.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

@@ -1,5 +1,7 @@
-﻿using Application.Services;
+﻿using Application.Services.Auth;
+using Application.Services.Token;
 using Infrastructure.Services.Auth;
+using Infrastructure.Services.Token;
 using WebApi.Controllers.Auth;
 
 namespace WebApi.Extentions
@@ -10,6 +12,8 @@ namespace WebApi.Extentions
         {
             builder.Services.AddScoped<AuthController>();
             builder.Services.AddScoped<ISignUpService, SignUpService>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ISignInService, SignInService>();
 
             // Add your service registrations here
 

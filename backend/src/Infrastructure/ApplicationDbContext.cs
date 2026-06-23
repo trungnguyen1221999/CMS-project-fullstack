@@ -22,7 +22,11 @@ namespace Infrastructure
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.Entity<User>().ToTable("Users");
+            builder
+                .Entity<User>()
+                .ToTable("Users")
+                .Property(x => x.DateCreated)
+                .HasColumnName("CreatedAt");
             builder.Entity<Role>().ToTable("Roles");
             builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
             builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
