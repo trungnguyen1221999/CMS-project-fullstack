@@ -8,10 +8,12 @@ namespace Application.Repositories
         where T : class
     {
         private readonly DbSet<T> _dbSet;
+        protected readonly ApplicationDbContext _context;
 
         public RepositoryBase(ApplicationDbContext context)
         {
             _dbSet = context.Set<T>();
+            _context = context;
         }
 
         //Write

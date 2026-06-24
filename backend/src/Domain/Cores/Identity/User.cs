@@ -25,8 +25,8 @@ namespace Domain.Cores.Identity
         public DateTime? VipStartDate { get; set; }
         public DateTime? VipExpireDate { get; set; }
         public DateTime? LastLoginDate { get; set; }
-        public double Balance { get; set; }
-        public double RoyaltyAmountPerPost { get; set; }
+        public decimal Balance { get; set; }
+        public decimal RoyaltyAmountPerPost { get; set; }
 
         public string GetFullName()
         {
