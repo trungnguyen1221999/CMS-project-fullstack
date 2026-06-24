@@ -1,6 +1,8 @@
-﻿using Application.DTOs.Request.Auth;
+﻿using Application.DTOs;
+using Application.DTOs.Request.Auth;
 using Application.DTOs.Response.Auth;
 using Application.Services.Auth;
+using AutoMapper;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 
@@ -9,12 +11,12 @@ namespace Infrastructure.Services.Auth
     public class SignUpService : ISignUpService
     {
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
+        private readonly IMapper _mapper;
 
-        public SignUpService(UserManager<User> userManager, RoleManager<Role> roleManager)
+        public SignUpService(UserManager<User> userManager, IMapper mapper)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
+            _mapper = mapper;
         }
 
         public async Task<SignUpResponseDto> SignUpAsync(SignUpRequestDto request)
@@ -29,15 +31,8 @@ namespace Infrastructure.Services.Auth
                 };
             }
 
-            var user = new User
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                UserName = request.Email,
-                Email = request.Email,
-                IsActive = true,
-            };
-
+            var user = _mapper.Map<SignUpRequestDto, User>(request);
+            user.UserName = user.Email;
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
@@ -58,6 +53,17 @@ namespace Infrastructure.Services.Auth
                 {
                     IsSuccess = false,
                     ErrorMessage = "Failed to assign role.",
+                };
+            }
+            user.DateCreated = DateTime.UtcNow;
+            var updateUser = await _userManager.UpdateAsync(user);
+            if (!updateUser.Succeeded)
+            {
+                var errors = updateUser.Errors.Select(e => e.Description);
+                return new SignUpResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorMessage = string.Join(" ", errors),
                 };
             }
             return new SignUpResponseDto { IsSuccess = true };

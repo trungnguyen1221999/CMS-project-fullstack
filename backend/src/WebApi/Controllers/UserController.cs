@@ -1,5 +1,8 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Request;
+using Application.DTOs.Response;
 using Application.Services;
+using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
@@ -29,6 +32,17 @@ namespace WebApi.Controllers
             if (result == null)
                 return NotFound();
 
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ResponseDto<User>>> CreateUser(
+            [FromBody] CreateUserRequestDto request
+        )
+        {
+            var result = await _userService.CreateAsync(request);
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
             return Ok(result);
         }
     }

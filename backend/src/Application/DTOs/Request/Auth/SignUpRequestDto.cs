@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using AutoMapper;
+using Domain.Cores.Identity;
 
 namespace Application.DTOs.Request.Auth
 {
@@ -23,5 +25,13 @@ namespace Application.DTOs.Request.Auth
         [Required(ErrorMessage = "Confirm password is required")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        public class AutoMapperProfile : Profile
+        {
+            public AutoMapperProfile()
+            {
+                CreateMap<SignUpRequestDto, User>();
+            }
+        }
     }
 }

@@ -1,8 +1,6 @@
-﻿namespace Application.DTOs.Response.Auth
+﻿using Domain.Cores.Identity;
+
+namespace Application.DTOs.Response.Auth
 {
-    public class SignUpResponseDto
-    {
-        public bool IsSuccess { get; set; }
-        public string? ErrorMessage { get; set; }
-    }
+    public class SignUpResponseDto : ResponseDto<User> { }
 }

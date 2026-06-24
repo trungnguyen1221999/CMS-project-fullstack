@@ -1,4 +1,7 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Request;
+using Application.DTOs.Response;
+using Application.DTOs.Response.Auth;
 using Application.Repositories;
 using Application.Services;
 using AutoMapper;
@@ -46,6 +49,33 @@ namespace Infrastructure.Services
             var roles = await _userManager.GetRolesAsync(user);
             userDto.Roles = roles;
             return userDto;
+        }
+
+        public async Task<ResponseDto<User>> CreateAsync(CreateUserRequestDto request)
+        {
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                return new ResponseDto<User>
+                {
+                    IsSuccess = false,
+                    ErrorMessage = "User is already exist",
+                };
+            }
+
+            var newUser = _mapper.Map<CreateUserRequestDto, User>(request);
+            var result = await _userManager.CreateAsync(newUser, request.Password);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description);
+
+                return new ResponseDto<User>
+                {
+                    IsSuccess = false,
+                    ErrorMessage = string.Join(", ", errors),
+                };
+            }
+            return new ResponseDto<User> { IsSuccess = true, Data = newUser };
         }
     }
 }
