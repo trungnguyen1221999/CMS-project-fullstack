@@ -1,4 +1,4 @@
-## **Building a CMS with .NET 8 & React** 
+## **Building a CMS with .NET & React** 
 
 ## **1. Design Patterns & Architecture Architecture** 
 
