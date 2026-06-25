@@ -14,5 +14,7 @@ namespace Application.Services
             int pageSize
         );
         Task<WriteResponseDto> CreateAsync(CreateUserRequestDto request);
+
+        Task<WriteResponseDto> UpdateAsync(Guid id, UpdateUserRequestDto request);
     }
 }

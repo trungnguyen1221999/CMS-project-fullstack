@@ -82,5 +82,28 @@ namespace Infrastructure.Services
             }
             return new WriteResponseDto { IsSuccess = true };
         }
+
+        public async Task<WriteResponseDto> UpdateAsync(Guid id, UpdateUserRequestDto request)
+        {
+            var existingUser = await _userManager.FindByIdAsync(id.ToString());
+            if (existingUser == null)
+            {
+                return new WriteResponseDto { IsSuccess = false, ErrorMessage = "User not found" };
+            }
+
+            _mapper.Map(request, existingUser);
+            var result = await _userManager.UpdateAsync(existingUser);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description);
+                return new WriteResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorMessage = string.Join(", ", errors),
+                };
+            }
+
+            return new WriteResponseDto { IsSuccess = true };
+        }
     }
 }

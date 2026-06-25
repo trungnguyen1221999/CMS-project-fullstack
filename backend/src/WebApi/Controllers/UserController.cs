@@ -49,5 +49,17 @@ namespace WebApi.Controllers
                 return BadRequest(result.ErrorMessage);
             return Ok(result);
         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<WriteResponseDto>> UpdateUser(
+            [FromRoute] Guid id,
+            [FromBody] UpdateUserRequestDto request
+        )
+        {
+            var result = await _userService.UpdateAsync(id, request);
+            if (!result.IsSuccess)
+                return NotFound(result);
+            return Ok(result);
+        }
     }
 }
