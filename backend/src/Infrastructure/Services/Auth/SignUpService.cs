@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Request.Auth;
 using Application.DTOs.Response.Auth;
 using Application.Services.Auth;
+using AutoMapper;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 
@@ -9,12 +10,12 @@ namespace Infrastructure.Services.Auth
     public class SignUpService : ISignUpService
     {
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
+        private readonly IMapper _mapper;
 
-        public SignUpService(UserManager<User> userManager, RoleManager<Role> roleManager)
+        public SignUpService(UserManager<User> userManager, IMapper mapper)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
+            _mapper = mapper;
         }
 
         public async Task<SignUpResponseDto> SignUpAsync(SignUpRequestDto request)
@@ -29,15 +30,9 @@ namespace Infrastructure.Services.Auth
                 };
             }
 
-            var user = new User
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                UserName = request.Email,
-                Email = request.Email,
-                IsActive = true,
-            };
-
+            var user = _mapper.Map<SignUpRequestDto, User>(request);
+            user.UserName = user.Email;
+            user.CreatedAt = DateTime.UtcNow;
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {

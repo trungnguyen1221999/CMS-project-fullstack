@@ -44,6 +44,7 @@ namespace Infrastructure.Services.Auth
                 request.Password,
                 false
             );
+
             if (!result.Succeeded)
             {
                 return new SignInResponseDto
@@ -59,7 +60,19 @@ namespace Infrastructure.Services.Auth
             );
             existingUser.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(refreshTokenExpiryDays);
             existingUser.RefreshToken = refreshToken;
-            await _userManager.UpdateAsync(existingUser);
+            existingUser.IsActive = true;
+            var updateUser = await _userManager.UpdateAsync(existingUser);
+
+            if (!updateUser.Succeeded)
+            {
+                var errors = updateUser.Errors.Select(e => e.Description);
+
+                return new SignInResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorMessage = string.Join(" ,", errors),
+                };
+            }
 
             return new SignInResponseDto
             {

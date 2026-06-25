@@ -1,0 +1,23 @@
+﻿using System.Linq.Expressions;
+
+namespace Application.Repositories
+{
+    public interface IRepository<T, TKey>
+        where T : class
+    {
+        //Read
+        Task<T?> GetByIdAsync(TKey key);
+        Task<IEnumerable<T>> GetAllAsync();
+
+        //Build Sql query
+        IEnumerable<T?> Find(Expression<Func<T, bool>> expression);
+
+        //Write
+
+        void Add(T entity);
+        void AddRange(IEnumerable<T> entities);
+
+        void Remove(T entity);
+        void RemoveRange(IEnumerable<T> entities);
+    }
+}
