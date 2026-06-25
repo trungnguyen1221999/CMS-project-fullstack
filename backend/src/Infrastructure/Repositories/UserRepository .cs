@@ -1,4 +1,5 @@
-﻿using Domain.Cores.Identity;
+﻿using Application.DTOs;
+using Domain.Cores.Identity;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,82 @@ namespace Application.Repositories
     {
         public UserRepository(ApplicationDbContext context)
             : base(context) { }
+
+        public async Task<IEnumerable<UserDto>> GetAllWithRolesAsync()
+        {
+            var usersWithRoles = await (
+                from user in _context.Users
+                join userRole in _context.UserRoles on user.Id equals userRole.UserId into userRoles
+                from userRole in userRoles.DefaultIfEmpty()
+                join role in _context.Roles on userRole.RoleId equals role.Id into roles
+                from role in roles.DefaultIfEmpty()
+                select new
+                {
+                    user.Id,
+                    user.FirstName,
+                    user.LastName,
+                    user.UserName,
+                    user.Email,
+                    user.PhoneNumber,
+                    user.DateCreated,
+                    user.IsActive,
+                    user.Dob,
+                    user.Avatar,
+                    user.VipStartDate,
+                    user.VipExpireDate,
+                    user.LastLoginDate,
+                    user.Balance,
+                    user.RoyaltyAmountPerPost,
+                    RoleName = role != null ? role.Name : null,
+                }
+            ).ToListAsync();
+
+            var result = usersWithRoles
+                .GroupBy(x => new
+                {
+                    x.Id,
+                    x.FirstName,
+                    x.LastName,
+                    x.UserName,
+                    x.Email,
+                    x.PhoneNumber,
+                    x.DateCreated,
+                    x.IsActive,
+                    x.Dob,
+                    x.Avatar,
+                    x.VipStartDate,
+                    x.VipExpireDate,
+                    x.LastLoginDate,
+                    x.Balance,
+                    x.RoyaltyAmountPerPost,
+                })
+                .Select(g => new UserDto
+                {
+                    Id = g.Key.Id,
+                    FirstName = g.Key.FirstName,
+                    LastName = g.Key.LastName,
+                    UserName = g.Key.UserName ?? string.Empty,
+                    Email = g.Key.Email ?? string.Empty,
+                    PhoneNumber = g.Key.PhoneNumber ?? string.Empty,
+                    CreatedAt = g.Key.DateCreated,
+                    IsActive = g.Key.IsActive,
+                    Dob = g.Key.Dob,
+                    Avatar = g.Key.Avatar,
+                    VipStartDate = g.Key.VipStartDate,
+                    VipExpireDate = g.Key.VipExpireDate,
+                    LastLoginDate = g.Key.LastLoginDate,
+                    Balance = g.Key.Balance,
+                    RoyaltyAmountPerPost = g.Key.RoyaltyAmountPerPost,
+                    Roles = g
+                        .Where(x => !string.IsNullOrEmpty(x.RoleName))
+                        .Select(x => x.RoleName!)
+                        .Distinct()
+                        .ToList(),
+                })
+                .ToList();
+
+            return result;
+        }
 
         public async Task RemoveUserFromRoles(Guid userId, IEnumerable<string> roleNames)
         {

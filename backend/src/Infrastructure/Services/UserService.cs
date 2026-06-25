@@ -29,14 +29,7 @@ namespace Infrastructure.Services
 
         public async Task<IEnumerable<UserDto>> GetAllAsync()
         {
-            var users = await _userRepository.GetAllAsync();
-            var userDtos = new List<UserDto>();
-
-            foreach (var user in users)
-            {
-                userDtos.Add(_mapper.Map<User, UserDto>(user));
-            }
-            return userDtos;
+            return await _userRepository.GetAllWithRolesAsync();
         }
 
         public async Task<UserDto?> GetByIdAsync(Guid userId)
