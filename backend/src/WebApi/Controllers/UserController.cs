@@ -46,19 +46,49 @@ namespace WebApi.Controllers
         {
             var result = await _userService.CreateAsync(request);
             if (!result.IsSuccess)
-                return BadRequest(result.ErrorMessage);
+                return BadRequest(result);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<WriteResponseDto>> UpdateUser(
             [FromRoute] Guid id,
-            [FromBody] UpdateUserRequestDto request
+            [FromBody] UpdateUserRequestDto? request
         )
         {
+            if (request == null)
+            {
+                return BadRequest(
+                    new WriteResponseDto
+                    {
+                        IsSuccess = false,
+                        ErrorCode = Application.Constants.ErrorMessages.Common.InvalidRequest,
+                        ErrorMessage = Application.Constants.ErrorMessages.Common.InvalidRequest,
+                    }
+                );
+            }
+
             var result = await _userService.UpdateAsync(id, request);
             if (!result.IsSuccess)
-                return NotFound(result);
+            {
+                return result.ErrorCode == Application.Constants.ErrorMessages.User.UserNotFound
+                    ? NotFound(result)
+                    : BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult<WriteResponseDto>> DeleteUsers([FromBody] List<Guid> ids)
+        {
+            var result = await _userService.DeleteAsync(ids);
+            if (!result.IsSuccess)
+            {
+                return result.ErrorCode == Application.Constants.ErrorMessages.User.UsersNotFound
+                    ? NotFound(result)
+                    : BadRequest(result);
+            }
+
             return Ok(result);
         }
     }

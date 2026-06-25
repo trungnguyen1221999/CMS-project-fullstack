@@ -26,11 +26,9 @@ namespace WebApi.Controllers.Auth
             var result = await _signUpService.SignUpAsync(request);
             if (!result.IsSuccess)
             {
-                return BadRequest(
-                    new SignUpResponseDto { IsSuccess = false, ErrorMessage = result.ErrorMessage }
-                );
+                return BadRequest(result);
             }
-            return Ok(new SignUpResponseDto { IsSuccess = true });
+            return Ok(result);
         }
 
         [HttpPost("signin")]
@@ -41,18 +39,10 @@ namespace WebApi.Controllers.Auth
             var result = await _signInService.SignInAsync(request);
             if (!result.IsSuccess)
             {
-                return BadRequest(
-                    new SignInResponseDto { IsSuccess = false, ErrorMessage = result.ErrorMessage }
-                );
+                return BadRequest(result);
             }
-            return Ok(
-                new SignInResponseDto
-                {
-                    IsSuccess = true,
-                    Token = result.Token,
-                    RefreshToken = result.RefreshToken,
-                }
-            );
+
+            return Ok(result);
         }
     }
 }

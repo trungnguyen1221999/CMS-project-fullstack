@@ -12,6 +12,7 @@ namespace Application.Repositories
             int currentPage,
             int pageSize
         );
+        Task<int> DeleteByIdsAsync(IEnumerable<Guid> ids);
         Task RemoveUserFromRoles(Guid userId, IEnumerable<string> roleNames);
     }
 }

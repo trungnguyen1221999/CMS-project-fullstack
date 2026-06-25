@@ -171,6 +171,15 @@ namespace Application.Repositories
             };
         }
 
+        public async Task<int> DeleteByIdsAsync(IEnumerable<Guid> ids)
+        {
+            var idList = ids.Distinct().ToList();
+            if (!idList.Any())
+                return 0;
+
+            return await _context.Users.Where(u => idList.Contains(u.Id)).ExecuteDeleteAsync();
+        }
+
         public async Task RemoveUserFromRoles(Guid userId, IEnumerable<string> roleNames)
         {
             if (!roleNames.Any())

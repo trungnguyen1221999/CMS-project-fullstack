@@ -4,8 +4,6 @@ using Application.Services;
 using Application.Services.Auth;
 using Application.Services.Token;
 using Application.UnitOfWork;
-using Infrastructure.Services;
-using Infrastructure.Services.Auth;
 using Infrastructure.Services.Token;
 
 namespace WebApi.Extentions

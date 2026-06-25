@@ -1,11 +1,11 @@
-﻿using Application.DTOs.Request.Auth;
+using Application.Constants;
+using Application.DTOs.Request.Auth;
 using Application.DTOs.Response.Auth;
-using Application.Services.Auth;
 using AutoMapper;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 
-namespace Infrastructure.Services.Auth
+namespace Application.Services.Auth
 {
     public class SignUpService : ISignUpService
     {
@@ -26,35 +26,43 @@ namespace Infrastructure.Services.Auth
                 return new SignUpResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = "User with this email already exists.",
+                    ErrorCode = ErrorMessages.User.UserAlreadyExists,
+                    ErrorMessage = ErrorMessages.User.UserAlreadyExists,
                 };
             }
 
             var user = _mapper.Map<SignUpRequestDto, User>(request);
             user.UserName = user.Email;
             user.CreatedAt = DateTime.UtcNow;
+
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
-                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-
+                var errors = result.Errors.Select(e => e.Description).ToList();
                 return new SignUpResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = string.IsNullOrWhiteSpace(errors)
-                        ? "Failed to create user."
-                        : errors,
+                    ErrorCode = ErrorMessages.User.CreateFailed,
+                    ErrorMessage = errors.Any()
+                        ? string.Join(" | ", errors)
+                        : ErrorMessages.User.CreateFailed,
                 };
             }
+
             var addRole = await _userManager.AddToRoleAsync(user, "User");
             if (!addRole.Succeeded)
             {
+                var errors = addRole.Errors.Select(e => e.Description).ToList();
                 return new SignUpResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = "Failed to assign role.",
+                    ErrorCode = ErrorMessages.Auth.FailedToAssignRole,
+                    ErrorMessage = errors.Any()
+                        ? string.Join(" | ", errors)
+                        : ErrorMessages.Auth.FailedToAssignRole,
                 };
             }
+
             return new SignUpResponseDto { IsSuccess = true };
         }
     }

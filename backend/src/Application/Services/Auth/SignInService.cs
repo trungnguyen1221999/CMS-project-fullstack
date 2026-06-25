@@ -1,12 +1,12 @@
-﻿using Application.DTOs.Request.Auth;
+using Application.Constants;
+using Application.DTOs.Request.Auth;
 using Application.DTOs.Response.Auth;
-using Application.Services.Auth;
 using Application.Services.Token;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 
-namespace Infrastructure.Services.Auth
+namespace Application.Services.Auth
 {
     public class SignInService : ISignInService
     {
@@ -36,9 +36,11 @@ namespace Infrastructure.Services.Auth
                 return new SignInResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = "User not found.",
+                    ErrorCode = ErrorMessages.User.UserNotFound,
+                    ErrorMessage = ErrorMessages.User.UserNotFound,
                 };
             }
+
             var result = await _signInManager.CheckPasswordSignInAsync(
                 existingUser,
                 request.Password,
@@ -50,27 +52,32 @@ namespace Infrastructure.Services.Auth
                 return new SignInResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = "Invalid password.",
+                    ErrorCode = ErrorMessages.Auth.InvalidPassword,
+                    ErrorMessage = ErrorMessages.Auth.InvalidPassword,
                 };
             }
+
             var token = await _tokenService.GenerateAccessToken(existingUser);
             var refreshToken = _tokenService.GenerateRefreshToken();
             var refreshTokenExpiryDays = _configuration.GetValue<int>(
                 "JwtSettings:RefreshTokenExpiryDays"
             );
+
             existingUser.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(refreshTokenExpiryDays);
             existingUser.RefreshToken = refreshToken;
             existingUser.IsActive = true;
-            var updateUser = await _userManager.UpdateAsync(existingUser);
 
+            var updateUser = await _userManager.UpdateAsync(existingUser);
             if (!updateUser.Succeeded)
             {
-                var errors = updateUser.Errors.Select(e => e.Description);
-
+                var errors = updateUser.Errors.Select(e => e.Description).ToList();
                 return new SignInResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = string.Join(" ,", errors),
+                    ErrorCode = ErrorMessages.User.UpdateFailed,
+                    ErrorMessage = errors.Any()
+                        ? string.Join(" | ", errors)
+                        : ErrorMessages.User.UpdateFailed,
                 };
             }
 

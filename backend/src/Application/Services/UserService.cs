@@ -1,16 +1,14 @@
-﻿using Application.DTOs;
+using Application.Constants;
+using Application.DTOs;
 using Application.DTOs.Request;
 using Application.DTOs.Response;
 using Application.Repositories;
-using Application.Services;
 using AutoMapper;
 using Domain;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Infrastructure.Services
+namespace Application.Services
 {
     public class UserService : IUserService
     {
@@ -36,11 +34,7 @@ namespace Infrastructure.Services
         )
         {
             var users = await _userRepository.GetAllWithRolesAsync(keyWord, currentPage, pageSize);
-            return new ReadResponseDto<PageResult<UserListItemDto>>
-            {
-                IsSuccess = true,
-                Data = users,
-            };
+            return new ReadResponseDto<PageResult<UserListItemDto>> { IsSuccess = true, Data = users };
         }
 
         public async Task<ReadResponseDto<UserDto>> GetByIdAsync(Guid userId)
@@ -51,9 +45,11 @@ namespace Infrastructure.Services
                 return new ReadResponseDto<UserDto>
                 {
                     IsSuccess = false,
-                    ErrorMessage = "User not found",
+                    ErrorCode = ErrorMessages.User.UserNotFound,
+                    ErrorMessage = ErrorMessages.User.UserNotFound,
                 };
             }
+
             return new ReadResponseDto<UserDto> { IsSuccess = true, Data = user };
         }
 
@@ -65,7 +61,8 @@ namespace Infrastructure.Services
                 return new WriteResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = "User is already exist",
+                    ErrorCode = ErrorMessages.User.UserAlreadyExists,
+                    ErrorMessage = ErrorMessages.User.UserAlreadyExists,
                 };
             }
 
@@ -74,14 +71,17 @@ namespace Infrastructure.Services
             var result = await _userManager.CreateAsync(newUser, request.Password);
             if (!result.Succeeded)
             {
-                var errors = result.Errors.Select(e => e.Description);
-
+                var errors = result.Errors.Select(e => e.Description).ToList();
                 return new WriteResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = string.Join(", ", errors),
+                    ErrorCode = ErrorMessages.User.CreateFailed,
+                    ErrorMessage = errors.Any()
+                        ? string.Join(" | ", errors)
+                        : ErrorMessages.User.CreateFailed,
                 };
             }
+
             return new WriteResponseDto { IsSuccess = true };
         }
 
@@ -90,18 +90,26 @@ namespace Infrastructure.Services
             var existingUser = await _userManager.FindByIdAsync(id.ToString());
             if (existingUser == null)
             {
-                return new WriteResponseDto { IsSuccess = false, ErrorMessage = "User not found" };
+                return new WriteResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorCode = ErrorMessages.User.UserNotFound,
+                    ErrorMessage = ErrorMessages.User.UserNotFound,
+                };
             }
 
             _mapper.Map(request, existingUser);
             var result = await _userManager.UpdateAsync(existingUser);
             if (!result.Succeeded)
             {
-                var errors = result.Errors.Select(e => e.Description);
+                var errors = result.Errors.Select(e => e.Description).ToList();
                 return new WriteResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = string.Join(", ", errors),
+                    ErrorCode = ErrorMessages.User.UpdateFailed,
+                    ErrorMessage = errors.Any()
+                        ? string.Join(" | ", errors)
+                        : ErrorMessages.User.UpdateFailed,
                 };
             }
 
@@ -111,20 +119,25 @@ namespace Infrastructure.Services
         public async Task<WriteResponseDto> DeleteAsync(List<Guid> ids)
         {
             if (ids == null || ids.Count == 0)
+            {
                 return new WriteResponseDto
                 {
                     IsSuccess = false,
-                    ErrorMessage = "Ids are required",
+                    ErrorCode = ErrorMessages.User.InvalidIds,
+                    ErrorMessage = ErrorMessages.User.InvalidIds,
                 };
+            }
 
-            var idList = ids.Distinct().ToList();
-
-            var affected = await _userRepository
-                .Find(u => idList.Contains(u.Id))
-                .ExecuteDeleteAsync();
-
+            var affected = await _userRepository.DeleteByIdsAsync(ids);
             if (affected == 0)
-                return new WriteResponseDto { IsSuccess = false, ErrorMessage = "Users not found" };
+            {
+                return new WriteResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorCode = ErrorMessages.User.UsersNotFound,
+                    ErrorMessage = ErrorMessages.User.UsersNotFound,
+                };
+            }
 
             return new WriteResponseDto { IsSuccess = true };
         }

@@ -36,6 +36,7 @@ namespace WebApi.Extentions
                         new Application.DTOs.Response.WriteResponseDto
                         {
                             IsSuccess = false,
+                            ErrorCode = Application.Constants.ErrorMessages.Common.InvalidRequest,
                             ErrorMessage = message,
                         }
                     );
