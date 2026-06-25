@@ -16,7 +16,7 @@ namespace Domain.Cores.Identity
         public bool IsActive { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
-        public DateTime DateCreated { get; set; }
+        public DateTime CreatedAt { get; set; }
         public DateTime? Dob { get; set; }
 
         [MaxLength(500)]

@@ -40,13 +40,13 @@ namespace Application.Repositories
         //Build Sql query
         public IEnumerable<T?> Find(Expression<Func<T, bool>> expression)
         {
-            return _dbSet.Where(expression);
+            return _dbSet.AsNoTracking().Where(expression);
         }
 
         //Read
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync();
         }
 
         public async Task<T?> GetByIdAsync(TKey key)

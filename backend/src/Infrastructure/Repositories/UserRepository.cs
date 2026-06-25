@@ -10,13 +10,16 @@ namespace Application.Repositories
         public UserRepository(ApplicationDbContext context)
             : base(context) { }
 
-        public async Task<IEnumerable<UserDto>> GetAllWithRolesAsync()
+        public async Task<UserDto?> GetByIdWithRolesAsync(Guid userId)
         {
-            var usersWithRoles = await (
-                from user in _context.Users
-                join userRole in _context.UserRoles on user.Id equals userRole.UserId into userRoles
+            var userWithRoles = await (
+                from user in _context.Users.AsNoTracking()
+                where user.Id == userId
+                join userRole in _context.UserRoles.AsNoTracking()
+                    on user.Id equals userRole.UserId into userRoles
                 from userRole in userRoles.DefaultIfEmpty()
-                join role in _context.Roles on userRole.RoleId equals role.Id into roles
+                join role in _context.Roles.AsNoTracking()
+                    on userRole.RoleId equals role.Id into roles
                 from role in roles.DefaultIfEmpty()
                 select new
                 {
@@ -26,7 +29,7 @@ namespace Application.Repositories
                     user.UserName,
                     user.Email,
                     user.PhoneNumber,
-                    user.DateCreated,
+                    user.CreatedAt,
                     user.IsActive,
                     user.Dob,
                     user.Avatar,
@@ -39,7 +42,10 @@ namespace Application.Repositories
                 }
             ).ToListAsync();
 
-            var result = usersWithRoles
+            if (!userWithRoles.Any())
+                return null;
+
+            var result = userWithRoles
                 .GroupBy(x => new
                 {
                     x.Id,
@@ -48,7 +54,7 @@ namespace Application.Repositories
                     x.UserName,
                     x.Email,
                     x.PhoneNumber,
-                    x.DateCreated,
+                    x.CreatedAt,
                     x.IsActive,
                     x.Dob,
                     x.Avatar,
@@ -66,7 +72,7 @@ namespace Application.Repositories
                     UserName = g.Key.UserName ?? string.Empty,
                     Email = g.Key.Email ?? string.Empty,
                     PhoneNumber = g.Key.PhoneNumber ?? string.Empty,
-                    CreatedAt = g.Key.DateCreated,
+                    CreatedAt = g.Key.CreatedAt,
                     IsActive = g.Key.IsActive,
                     Dob = g.Key.Dob,
                     Avatar = g.Key.Avatar,
@@ -75,6 +81,60 @@ namespace Application.Repositories
                     LastLoginDate = g.Key.LastLoginDate,
                     Balance = g.Key.Balance,
                     RoyaltyAmountPerPost = g.Key.RoyaltyAmountPerPost,
+                    Roles = g
+                        .Where(x => !string.IsNullOrEmpty(x.RoleName))
+                        .Select(x => x.RoleName!)
+                        .Distinct()
+                        .ToList(),
+                })
+                .FirstOrDefault();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<UserListItemDto>> GetAllWithRolesAsync()
+        {
+            var usersWithRoles = await (
+                from user in _context.Users.AsNoTracking()
+                join userRole in _context.UserRoles.AsNoTracking()
+                    on user.Id equals userRole.UserId into userRoles
+                from userRole in userRoles.DefaultIfEmpty()
+                join role in _context.Roles.AsNoTracking()
+                    on userRole.RoleId equals role.Id into roles
+                from role in roles.DefaultIfEmpty()
+                select new
+                {
+                    user.Id,
+                    user.FirstName,
+                    user.LastName,
+                    user.UserName,
+                    user.Email,
+                    user.CreatedAt,
+                    user.IsActive,
+                    RoleName = role != null ? role.Name : null,
+                }
+            ).ToListAsync();
+
+            var result = usersWithRoles
+                .GroupBy(x => new
+                {
+                    x.Id,
+                    x.FirstName,
+                    x.LastName,
+                    x.UserName,
+                    x.Email,
+                    x.CreatedAt,
+                    x.IsActive,
+                })
+                .Select(g => new UserListItemDto
+                {
+                    Id = g.Key.Id,
+                    FirstName = g.Key.FirstName,
+                    LastName = g.Key.LastName,
+                    UserName = g.Key.UserName ?? string.Empty,
+                    Email = g.Key.Email ?? string.Empty,
+                    CreatedAt = g.Key.CreatedAt,
+                    IsActive = g.Key.IsActive,
                     Roles = g
                         .Where(x => !string.IsNullOrEmpty(x.RoleName))
                         .Select(x => x.RoleName!)

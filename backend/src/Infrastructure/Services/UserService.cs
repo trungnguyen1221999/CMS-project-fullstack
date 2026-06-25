@@ -12,29 +12,33 @@ namespace Infrastructure.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
+        private readonly IMapper _mapper;
 
         public UserService(
             IUserRepository userRepository,
-            IMapper mapper,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            IMapper mapper
         )
         {
             _userRepository = userRepository;
-            _mapper = mapper;
             _userManager = userManager;
+            _mapper = mapper;
         }
 
-        public async Task<ReadResponseDto<IEnumerable<UserDto>>> GetAllAsync()
+        public async Task<ReadResponseDto<IEnumerable<UserListItemDto>>> GetAllAsync()
         {
             var users = await _userRepository.GetAllWithRolesAsync();
-            return new ReadResponseDto<IEnumerable<UserDto>> { IsSuccess = true, Data = users };
+            return new ReadResponseDto<IEnumerable<UserListItemDto>>
+            {
+                IsSuccess = true,
+                Data = users,
+            };
         }
 
         public async Task<ReadResponseDto<UserDto>> GetByIdAsync(Guid userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userRepository.GetByIdWithRolesAsync(userId);
             if (user == null)
             {
                 return new ReadResponseDto<UserDto>
@@ -43,12 +47,7 @@ namespace Infrastructure.Services
                     ErrorMessage = "User not found",
                 };
             }
-
-            var userDto = _mapper.Map<User, UserDto>(user);
-
-            var roles = await _userManager.GetRolesAsync(user);
-            userDto.Roles = roles;
-            return new ReadResponseDto<UserDto> { IsSuccess = true, Data = userDto };
+            return new ReadResponseDto<UserDto> { IsSuccess = true, Data = user };
         }
 
         public async Task<WriteResponseDto> CreateAsync(CreateUserRequestDto request)

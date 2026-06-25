@@ -1,4 +1,4 @@
-﻿using Domain.Cores.Identity;
+﻿using Application.DTOs.Response;
 
 namespace Application.DTOs.Response.Auth
 {

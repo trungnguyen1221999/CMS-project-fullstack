@@ -123,7 +123,7 @@ public static class DataSeeder
                 FirstName = firstName,
                 LastName = lastName,
                 IsActive = true,
-                DateCreated = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
                 Balance = 0,
                 RoyaltyAmountPerPost = roleName == Roles.Author ? 15 : 0, // Default token rate for authors
             };

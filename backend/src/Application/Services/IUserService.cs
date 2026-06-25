@@ -7,7 +7,7 @@ namespace Application.Services
     public interface IUserService
     {
         Task<ReadResponseDto<UserDto>> GetByIdAsync(Guid userId);
-        Task<ReadResponseDto<IEnumerable<UserDto>>> GetAllAsync();
+        Task<ReadResponseDto<IEnumerable<UserListItemDto>>> GetAllAsync();
         Task<WriteResponseDto> CreateAsync(CreateUserRequestDto request);
     }
 }

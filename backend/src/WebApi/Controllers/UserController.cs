@@ -18,7 +18,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ReadResponseDto<IEnumerable<UserDto>>>> GetAllUsers()
+        public async Task<ActionResult<ReadResponseDto<IEnumerable<UserListItemDto>>>> GetAllUsers()
         {
             var result = await _userService.GetAllAsync();
             return Ok(result);

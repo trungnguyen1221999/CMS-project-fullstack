@@ -1,5 +1,4 @@
-﻿using Application.DTOs;
-using Application.DTOs.Request.Auth;
+﻿using Application.DTOs.Request.Auth;
 using Application.DTOs.Response.Auth;
 using Application.Services.Auth;
 using AutoMapper;
@@ -33,6 +32,7 @@ namespace Infrastructure.Services.Auth
 
             var user = _mapper.Map<SignUpRequestDto, User>(request);
             user.UserName = user.Email;
+            user.CreatedAt = DateTime.UtcNow;
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
@@ -53,17 +53,6 @@ namespace Infrastructure.Services.Auth
                 {
                     IsSuccess = false,
                     ErrorMessage = "Failed to assign role.",
-                };
-            }
-            user.DateCreated = DateTime.UtcNow;
-            var updateUser = await _userManager.UpdateAsync(user);
-            if (!updateUser.Succeeded)
-            {
-                var errors = updateUser.Errors.Select(e => e.Description);
-                return new SignUpResponseDto
-                {
-                    IsSuccess = false,
-                    ErrorMessage = string.Join(" ", errors),
                 };
             }
             return new SignUpResponseDto { IsSuccess = true };
