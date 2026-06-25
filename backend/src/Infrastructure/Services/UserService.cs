@@ -7,6 +7,8 @@ using AutoMapper;
 using Domain;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure.Services
 {
@@ -102,6 +104,27 @@ namespace Infrastructure.Services
                     ErrorMessage = string.Join(", ", errors),
                 };
             }
+
+            return new WriteResponseDto { IsSuccess = true };
+        }
+
+        public async Task<WriteResponseDto> DeleteAsync(List<Guid> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return new WriteResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorMessage = "Ids are required",
+                };
+
+            var idList = ids.Distinct().ToList();
+
+            var affected = await _userRepository
+                .Find(u => idList.Contains(u.Id))
+                .ExecuteDeleteAsync();
+
+            if (affected == 0)
+                return new WriteResponseDto { IsSuccess = false, ErrorMessage = "Users not found" };
 
             return new WriteResponseDto { IsSuccess = true };
         }

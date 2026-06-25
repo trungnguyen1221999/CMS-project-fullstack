@@ -16,5 +16,7 @@ namespace Application.Services
         Task<WriteResponseDto> CreateAsync(CreateUserRequestDto request);
 
         Task<WriteResponseDto> UpdateAsync(Guid id, UpdateUserRequestDto request);
+
+        Task<WriteResponseDto> DeleteAsync(List<Guid> ids);
     }
 }

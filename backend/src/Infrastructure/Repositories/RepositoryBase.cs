@@ -38,7 +38,12 @@ namespace Application.Repositories
         }
 
         //Build Sql query
-        public IEnumerable<T?> Find(Expression<Func<T, bool>> expression)
+        public IQueryable<T?> Find(Expression<Func<T, bool>> expression)
+        {
+            return _dbSet.AsNoTracking().Where(expression);
+        }
+
+        public IEnumerable<T?> FindList(Expression<Func<T, bool>> expression)
         {
             return _dbSet.AsNoTracking().Where(expression);
         }
