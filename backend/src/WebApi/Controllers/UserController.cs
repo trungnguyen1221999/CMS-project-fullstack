@@ -2,7 +2,6 @@
 using Application.DTOs.Request;
 using Application.DTOs.Response;
 using Application.Services;
-using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
@@ -19,24 +18,24 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
+        public async Task<ActionResult<ReadResponseDto<IEnumerable<UserDto>>>> GetAllUsers()
         {
             var result = await _userService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDto>> GetUserById(Guid userId)
+        public async Task<ActionResult<ReadResponseDto<UserDto>>> GetUserById([FromRoute] Guid id)
         {
-            var result = await _userService.GetByIdAsync(userId);
-            if (result == null)
-                return NotFound();
+            var result = await _userService.GetByIdAsync(id);
+            if (!result.IsSuccess)
+                return NotFound(result);
 
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ResponseDto<User>>> CreateUser(
+        public async Task<ActionResult<WriteResponseDto>> CreateUser(
             [FromBody] CreateUserRequestDto request
         )
         {

@@ -2,5 +2,5 @@
 
 namespace Application.DTOs.Response.Auth
 {
-    public class SignUpResponseDto : ResponseDto<User> { }
+    public class SignUpResponseDto : WriteResponseDto { }
 }

@@ -4,11 +4,14 @@ using System.Text;
 
 namespace Application.DTOs.Response
 {
-    public class ResponseDto<T>
+    public class WriteResponseDto
     {
         public bool IsSuccess { get; set; }
         public string? ErrorMessage { get; set; }
+    }
 
+    public class ReadResponseDto<T> : WriteResponseDto
+    {
         public T? Data { get; set; }
     }
 }
