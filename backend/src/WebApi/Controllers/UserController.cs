@@ -2,6 +2,7 @@
 using Application.DTOs.Request;
 using Application.DTOs.Response;
 using Application.Services;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
@@ -18,9 +19,13 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ReadResponseDto<IEnumerable<UserListItemDto>>>> GetAllUsers()
+        public async Task<ActionResult<ReadResponseDto<PageResult<UserListItemDto>>>> GetAllUsers(
+            [FromQuery] string? keyWord,
+            [FromQuery] int currentPage = 1,
+            [FromQuery] int pageSize = 10
+        )
         {
-            var result = await _userService.GetAllAsync();
+            var result = await _userService.GetAllAsync(keyWord, currentPage, pageSize);
             return Ok(result);
         }
 

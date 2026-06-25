@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Domain;
 using Domain.Cores.Identity;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,12 @@ namespace Application.Repositories
                 from user in _context.Users.AsNoTracking()
                 where user.Id == userId
                 join userRole in _context.UserRoles.AsNoTracking()
-                    on user.Id equals userRole.UserId into userRoles
+                    on user.Id equals userRole.UserId
+                    into userRoles
                 from userRole in userRoles.DefaultIfEmpty()
                 join role in _context.Roles.AsNoTracking()
-                    on userRole.RoleId equals role.Id into roles
+                    on userRole.RoleId equals role.Id
+                    into roles
                 from role in roles.DefaultIfEmpty()
                 select new
                 {
@@ -81,8 +84,7 @@ namespace Application.Repositories
                     LastLoginDate = g.Key.LastLoginDate,
                     Balance = g.Key.Balance,
                     RoyaltyAmountPerPost = g.Key.RoyaltyAmountPerPost,
-                    Roles = g
-                        .Where(x => !string.IsNullOrEmpty(x.RoleName))
+                    Roles = g.Where(x => !string.IsNullOrEmpty(x.RoleName))
                         .Select(x => x.RoleName!)
                         .Distinct()
                         .ToList(),
@@ -92,31 +94,37 @@ namespace Application.Repositories
             return result;
         }
 
-        public async Task<IEnumerable<UserListItemDto>> GetAllWithRolesAsync()
+        public async Task<PageResult<UserListItemDto>> GetAllWithRolesAsync(
+            string? keyWord,
+            int currentPage,
+            int pageSize
+        )
         {
-            var usersWithRoles = await (
-                from user in _context.Users.AsNoTracking()
-                join userRole in _context.UserRoles.AsNoTracking()
-                    on user.Id equals userRole.UserId into userRoles
-                from userRole in userRoles.DefaultIfEmpty()
-                join role in _context.Roles.AsNoTracking()
-                    on userRole.RoleId equals role.Id into roles
-                from role in roles.DefaultIfEmpty()
-                select new
-                {
-                    user.Id,
-                    user.FirstName,
-                    user.LastName,
-                    user.UserName,
-                    user.Email,
-                    user.CreatedAt,
-                    user.IsActive,
-                    RoleName = role != null ? role.Name : null,
-                }
-            ).ToListAsync();
+            if (currentPage <= 0)
+                currentPage = 1;
+            if (pageSize <= 0)
+                pageSize = 10;
 
-            var result = usersWithRoles
-                .GroupBy(x => new
+            var usersQuery = _context.Users.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyWord))
+            {
+                var keyword = keyWord.Trim();
+                usersQuery = usersQuery.Where(x =>
+                    x.FirstName.Contains(keyword)
+                    || x.LastName.Contains(keyword)
+                    || (x.Email != null && x.Email.Contains(keyword))
+                    || (x.PhoneNumber != null && x.PhoneNumber.Contains(keyword))
+                );
+            }
+
+            var totalCount = await usersQuery.CountAsync();
+
+            var users = await usersQuery
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new
                 {
                     x.Id,
                     x.FirstName,
@@ -126,24 +134,41 @@ namespace Application.Repositories
                     x.CreatedAt,
                     x.IsActive,
                 })
-                .Select(g => new UserListItemDto
+                .ToListAsync();
+
+            var userIds = users.Select(x => x.Id).ToList();
+            var userRoles = await (
+                from userRole in _context.UserRoles.AsNoTracking()
+                join role in _context.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+                where userIds.Contains(userRole.UserId)
+                select new { userRole.UserId, RoleName = role.Name }
+            ).ToListAsync();
+
+            var result = users
+                .Select(user => new UserListItemDto
                 {
-                    Id = g.Key.Id,
-                    FirstName = g.Key.FirstName,
-                    LastName = g.Key.LastName,
-                    UserName = g.Key.UserName ?? string.Empty,
-                    Email = g.Key.Email ?? string.Empty,
-                    CreatedAt = g.Key.CreatedAt,
-                    IsActive = g.Key.IsActive,
-                    Roles = g
-                        .Where(x => !string.IsNullOrEmpty(x.RoleName))
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    UserName = user.UserName ?? string.Empty,
+                    Email = user.Email ?? string.Empty,
+                    CreatedAt = user.CreatedAt,
+                    IsActive = user.IsActive,
+                    Roles = userRoles
+                        .Where(x => x.UserId == user.Id && !string.IsNullOrEmpty(x.RoleName))
                         .Select(x => x.RoleName!)
                         .Distinct()
                         .ToList(),
                 })
                 .ToList();
 
-            return result;
+            return new PageResult<UserListItemDto>
+            {
+                CurrentPage = currentPage,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                Result = result,
+            };
         }
 
         public async Task RemoveUserFromRoles(Guid userId, IEnumerable<string> roleNames)

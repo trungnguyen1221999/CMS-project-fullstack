@@ -4,6 +4,7 @@ using Application.DTOs.Response;
 using Application.Repositories;
 using Application.Services;
 using AutoMapper;
+using Domain;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 
@@ -26,10 +27,14 @@ namespace Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<ReadResponseDto<IEnumerable<UserListItemDto>>> GetAllAsync()
+        public async Task<ReadResponseDto<PageResult<UserListItemDto>>> GetAllAsync(
+            string? keyWord,
+            int currentPage,
+            int pageSize
+        )
         {
-            var users = await _userRepository.GetAllWithRolesAsync();
-            return new ReadResponseDto<IEnumerable<UserListItemDto>>
+            var users = await _userRepository.GetAllWithRolesAsync(keyWord, currentPage, pageSize);
+            return new ReadResponseDto<PageResult<UserListItemDto>>
             {
                 IsSuccess = true,
                 Data = users,
