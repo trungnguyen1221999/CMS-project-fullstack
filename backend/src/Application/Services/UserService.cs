@@ -151,25 +151,48 @@ namespace Application.Services
             ChangeMyPasswordRequest request
         )
         {
-            var result = await _userRepository.ChangeMyPasswordAsync(
-                id,
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                var code = ErrorMessages.User.UserNotFound;
+                return new WriteResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorCode = code,
+                    ErrorMessage = code,
+                };
+            }
+
+            var sameAsCurrent = await _userManager.CheckPasswordAsync(user, request.NewPassword);
+            if (sameAsCurrent)
+            {
+                var code = ErrorMessages.User.ChangePassword.NewPasswordSameAsCurrent;
+                return new WriteResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorCode = code,
+                    ErrorMessage = code,
+                };
+            }
+
+            var result = await _userManager.ChangePasswordAsync(
+                user,
                 request.CurrentPassword,
                 request.NewPassword
             );
+
             if (!result.Succeeded)
             {
-                var fallbackCode = ErrorMessages.Auth.ChangePasswordFailed;
-                var errorCode = string.IsNullOrWhiteSpace(result.ErrorCode)
-                    ? fallbackCode
-                    : result.ErrorCode;
+                var errors = result.Errors.Select(x => x.Description).ToList();
+                var code = result.Errors.Any(x => x.Code == "PasswordMismatch")
+                    ? ErrorMessages.Auth.CurrentPasswordIncorrect
+                    : ErrorMessages.Auth.ChangePasswordFailed;
 
                 return new WriteResponseDto
                 {
                     IsSuccess = false,
-                    ErrorCode = errorCode,
-                    ErrorMessage = result.Errors.Any()
-                        ? string.Join(" | ", result.Errors)
-                        : errorCode,
+                    ErrorCode = code,
+                    ErrorMessage = errors.Any() ? string.Join(" | ", errors) : code,
                 };
             }
 

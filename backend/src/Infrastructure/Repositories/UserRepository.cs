@@ -1,23 +1,15 @@
-﻿using Application.Common;
-using Application.Constants;
-using Application.DTOs;
+﻿using Application.DTOs;
 using Domain;
 using Domain.Cores.Identity;
 using Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Repositories
 {
     public class UserRepository : RepositoryBase<User, Guid>, IUserRepository
     {
-        private readonly UserManager<User> _userManager;
-
-        public UserRepository(ApplicationDbContext context, UserManager<User> userManager)
-            : base(context)
-        {
-            _userManager = userManager;
-        }
+        public UserRepository(ApplicationDbContext context)
+            : base(context) { }
 
         public async Task<UserDto?> GetByIdWithRolesAsync(Guid userId)
         {
@@ -207,49 +199,5 @@ namespace Application.Repositories
             }
         }
 
-        public async Task<OperationResult> ChangeMyPasswordAsync(
-            Guid userId,
-            string currentPassword,
-            string newPassword
-        )
-        {
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                return new OperationResult
-                {
-                    Succeeded = false,
-                    ErrorCode = ErrorMessages.User.UserNotFound,
-                };
-            }
-
-            var sameAsCurrent = await _userManager.CheckPasswordAsync(user, newPassword);
-            if (sameAsCurrent)
-            {
-                return new OperationResult
-                {
-                    Succeeded = false,
-                    ErrorCode = ErrorMessages.User.ChangePassword.NewPasswordSameAsCurrent,
-                };
-            }
-
-            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-            if (!result.Succeeded)
-            {
-                var errors = result.Errors.Select(x => x.Description).ToList();
-                var errorCode = result.Errors.Any(x => x.Code == "PasswordMismatch")
-                    ? ErrorMessages.Auth.CurrentPasswordIncorrect
-                    : ErrorMessages.Auth.ChangePasswordFailed;
-
-                return new OperationResult
-                {
-                    Succeeded = false,
-                    ErrorCode = errorCode,
-                    Errors = errors,
-                };
-            }
-
-            return new OperationResult { Succeeded = true };
-        }
     }
 }
