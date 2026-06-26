@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using Domain.Cores.Identity;
 
-namespace Application.DTOs.Request
+namespace Application.Contracts.Users.Requests
 {
-    public class CreateUserRequestDto
+    public class CreateUserRequest
     {
         [Required]
         [MaxLength(100)]
@@ -37,7 +37,7 @@ namespace Application.DTOs.Request
         {
             public AutoMapperProfiles()
             {
-                CreateMap<CreateUserRequestDto, User>();
+                CreateMap<CreateUserRequest, User>();
             }
         }
     }

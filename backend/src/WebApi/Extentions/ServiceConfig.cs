@@ -33,7 +33,7 @@ namespace WebApi.Extentions
                         : "Invalid request.";
 
                     return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(
-                        new Application.DTOs.Response.WriteResponseDto
+                        new Application.Contracts.Common.WriteResponse
                         {
                             IsSuccess = false,
                             ErrorCode = Application.Constants.ErrorMessages.Common.InvalidRequest,

@@ -1,9 +1,9 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Domain.Cores.Identity;
 
-namespace Application.DTOs
+namespace Application.Contracts.Users.Responses
 {
-    public class UserDto
+    public class UserResponse
     {
         public Guid Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
@@ -20,14 +20,13 @@ namespace Application.DTOs
         public DateTime? VipExpireDate { get; set; }
         public DateTime? LastLoginDate { get; set; }
         public decimal Balance { get; set; }
-
         public decimal RoyaltyAmountPerPost { get; set; }
 
         public class AutoMapperProfiles : Profile
         {
             public AutoMapperProfiles()
             {
-                CreateMap<User, UserDto>();
+                CreateMap<User, UserResponse>();
             }
         }
     }

@@ -1,6 +1,6 @@
-namespace Application.DTOs
+namespace Application.Contracts.Users.Responses
 {
-    public class UserListItemDto
+    public class UserListItemResponse
     {
         public Guid Id { get; set; }
         public string FirstName { get; set; } = string.Empty;

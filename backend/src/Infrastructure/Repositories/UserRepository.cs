@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+﻿using Application.Contracts.Users.Responses;
 using Domain;
 using Domain.Cores.Identity;
 using Infrastructure;
@@ -11,7 +11,7 @@ namespace Application.Repositories
         public UserRepository(ApplicationDbContext context)
             : base(context) { }
 
-        public async Task<UserDto?> GetByIdWithRolesAsync(Guid userId)
+        public async Task<UserResponse?> GetByIdWithRolesAsync(Guid userId)
         {
             var userWithRoles = await (
                 from user in _context.Users.AsNoTracking()
@@ -67,7 +67,7 @@ namespace Application.Repositories
                     x.Balance,
                     x.RoyaltyAmountPerPost,
                 })
-                .Select(g => new UserDto
+                .Select(g => new UserResponse
                 {
                     Id = g.Key.Id,
                     FirstName = g.Key.FirstName,
@@ -94,7 +94,7 @@ namespace Application.Repositories
             return result;
         }
 
-        public async Task<PageResult<UserListItemDto>> GetAllWithRolesAsync(
+        public async Task<PageResult<UserListItemResponse>> GetAllWithRolesAsync(
             string? keyWord,
             int currentPage,
             int pageSize
@@ -145,7 +145,7 @@ namespace Application.Repositories
             ).ToListAsync();
 
             var result = users
-                .Select(user => new UserListItemDto
+                .Select(user => new UserListItemResponse
                 {
                     Id = user.Id,
                     FirstName = user.FirstName,
@@ -162,7 +162,7 @@ namespace Application.Repositories
                 })
                 .ToList();
 
-            return new PageResult<UserListItemDto>
+            return new PageResult<UserListItemResponse>
             {
                 CurrentPage = currentPage,
                 PageSize = pageSize,

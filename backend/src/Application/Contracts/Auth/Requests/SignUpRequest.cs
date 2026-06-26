@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using Domain.Cores.Identity;
 
-namespace Application.DTOs.Request.Auth
+namespace Application.Contracts.Auth.Requests
 {
-    public class SignUpRequestDto
+    public class SignUpRequest
     {
         [Required(ErrorMessage = "First name is required")]
         [MaxLength(50)]
@@ -30,7 +30,7 @@ namespace Application.DTOs.Request.Auth
         {
             public AutoMapperProfile()
             {
-                CreateMap<SignUpRequestDto, User>();
+                CreateMap<SignUpRequest, User>();
             }
         }
     }

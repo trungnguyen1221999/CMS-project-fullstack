@@ -1,10 +1,10 @@
-﻿using Application.DTOs.Request.Auth;
-using Application.DTOs.Response.Auth;
+﻿using Application.Contracts.Auth.Requests;
+using Application.Contracts.Auth.Responses;
 
 namespace Application.Services.Auth
 {
     public interface ISignInService
     {
-        Task<SignInResponseDto> SignInAsync(SignInRequestDto request);
+        Task<SignInResponse> SignInAsync(SignInRequest request);
     }
 }

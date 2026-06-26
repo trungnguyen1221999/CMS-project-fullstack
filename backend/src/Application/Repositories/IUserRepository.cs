@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+﻿using Application.Contracts.Users.Responses;
 using Domain;
 using Domain.Cores.Identity;
 
@@ -6,8 +6,8 @@ namespace Application.Repositories
 {
     public interface IUserRepository : IRepository<User, Guid>
     {
-        Task<UserDto?> GetByIdWithRolesAsync(Guid userId);
-        Task<PageResult<UserListItemDto>> GetAllWithRolesAsync(
+        Task<UserResponse?> GetByIdWithRolesAsync(Guid userId);
+        Task<PageResult<UserListItemResponse>> GetAllWithRolesAsync(
             string? keyWord,
             int currentPage,
             int pageSize

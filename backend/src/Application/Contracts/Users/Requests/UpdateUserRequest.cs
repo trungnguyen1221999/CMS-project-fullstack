@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using Domain.Cores.Identity;
 
-namespace Application.DTOs.Request
+namespace Application.Contracts.Users.Requests
 {
-    public class UpdateUserRequestDto
+    public class UpdateUserRequest
     {
         [Required]
         [MaxLength(100)]
@@ -31,7 +31,7 @@ namespace Application.DTOs.Request
         {
             public AutoMapperProfiles()
             {
-                CreateMap<UpdateUserRequestDto, User>()
+                CreateMap<UpdateUserRequest, User>()
                     .ForMember(dest => dest.Id, opt => opt.Ignore())
                     .ForMember(dest => dest.UserName, opt => opt.Ignore())
                     .ForMember(dest => dest.NormalizedUserName, opt => opt.Ignore())

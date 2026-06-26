@@ -1,24 +1,24 @@
-﻿using Application.DTOs;
-using Application.DTOs.Request;
-using Application.DTOs.Response;
+﻿using Application.Contracts.Common;
+using Application.Contracts.Users.Requests;
+using Application.Contracts.Users.Responses;
 using Domain;
 
 namespace Application.Services
 {
     public interface IUserService
     {
-        Task<ReadResponseDto<UserDto>> GetByIdAsync(Guid userId);
-        Task<ReadResponseDto<PageResult<UserListItemDto>>> GetAllAsync(
+        Task<ReadResponse<UserResponse>> GetByIdAsync(Guid userId);
+        Task<ReadResponse<PageResult<UserListItemResponse>>> GetAllAsync(
             string? keyWord,
             int currentPage,
             int pageSize
         );
-        Task<WriteResponseDto> CreateAsync(CreateUserRequestDto request);
+        Task<WriteResponse> CreateAsync(CreateUserRequest request);
 
-        Task<WriteResponseDto> UpdateAsync(Guid id, UpdateUserRequestDto request);
+        Task<WriteResponse> UpdateAsync(Guid id, UpdateUserRequest request);
 
-        Task<WriteResponseDto> DeleteAsync(List<Guid> ids);
+        Task<WriteResponse> DeleteAsync(List<Guid> ids);
 
-        Task<WriteResponseDto> ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request);
+        Task<WriteResponse> ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request);
     }
 }

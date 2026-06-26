@@ -1,6 +1,7 @@
-﻿using Application.DTOs;
-using Application.DTOs.Request;
-using Application.DTOs.Response;
+﻿using Application.Constants;
+using Application.Contracts.Common;
+using Application.Contracts.Users.Requests;
+using Application.Contracts.Users.Responses;
 using Application.Services;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ReadResponseDto<PageResult<UserListItemDto>>>> GetAllUsers(
+        public async Task<ActionResult<ReadResponse<PageResult<UserListItemResponse>>>> GetAllUsers(
             [FromQuery] string? keyWord,
             [FromQuery] int currentPage = 1,
             [FromQuery] int pageSize = 10
@@ -33,7 +34,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ReadResponseDto<UserDto>>> GetUserById([FromRoute] Guid id)
+        public async Task<ActionResult<ReadResponse<UserResponse>>> GetUserById([FromRoute] Guid id)
         {
             var result = await _userService.GetByIdAsync(id);
             if (!result.IsSuccess)
@@ -43,8 +44,8 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<WriteResponseDto>> CreateUser(
-            [FromBody] CreateUserRequestDto request
+        public async Task<ActionResult<WriteResponse>> CreateUser(
+            [FromBody] CreateUserRequest request
         )
         {
             var result = await _userService.CreateAsync(request);
@@ -54,19 +55,19 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<WriteResponseDto>> UpdateUser(
+        public async Task<ActionResult<WriteResponse>> UpdateUser(
             [FromRoute] Guid id,
-            [FromBody] UpdateUserRequestDto? request
+            [FromBody] UpdateUserRequest? request
         )
         {
             if (request == null)
             {
                 return BadRequest(
-                    new WriteResponseDto
+                    new WriteResponse
                     {
                         IsSuccess = false,
-                        ErrorCode = Application.Constants.ErrorMessages.Common.InvalidRequest,
-                        ErrorMessage = Application.Constants.ErrorMessages.Common.InvalidRequest,
+                        ErrorCode = ErrorMessages.Common.InvalidRequest,
+                        ErrorMessage = ErrorMessages.Common.InvalidRequest,
                     }
                 );
             }
@@ -74,7 +75,7 @@ namespace WebApi.Controllers
             var result = await _userService.UpdateAsync(id, request);
             if (!result.IsSuccess)
             {
-                return result.ErrorCode == Application.Constants.ErrorMessages.User.UserNotFound
+                return result.ErrorCode == ErrorMessages.User.UserNotFound
                     ? NotFound(result)
                     : BadRequest(result);
             }
@@ -82,12 +83,12 @@ namespace WebApi.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult<WriteResponseDto>> DeleteUsers([FromBody] List<Guid> ids)
+        public async Task<ActionResult<WriteResponse>> DeleteUsers([FromBody] List<Guid> ids)
         {
             var result = await _userService.DeleteAsync(ids);
             if (!result.IsSuccess)
             {
-                return result.ErrorCode == Application.Constants.ErrorMessages.User.UsersNotFound
+                return result.ErrorCode == ErrorMessages.User.UsersNotFound
                     ? NotFound(result)
                     : BadRequest(result);
             }
@@ -96,7 +97,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("change-password")]
-        public async Task<ActionResult<WriteResponseDto>> ChangeMyPassword(
+        public async Task<ActionResult<WriteResponse>> ChangeMyPassword(
             [FromBody] ChangeMyPasswordRequest request
         )
         {
@@ -104,8 +105,8 @@ namespace WebApi.Controllers
             if (!result.IsSuccess)
             {
                 return
-                    result.ErrorCode == Application.Constants.ErrorMessages.User.UserNotFound
-                    || result.ErrorCode == Application.Constants.ErrorMessages.User.UsersNotFound
+                    result.ErrorCode == ErrorMessages.User.UserNotFound
+                    || result.ErrorCode == ErrorMessages.User.UsersNotFound
                     ? NotFound(result)
                     : BadRequest(result);
             }

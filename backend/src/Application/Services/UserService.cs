@@ -1,7 +1,7 @@
 using Application.Constants;
-using Application.DTOs;
-using Application.DTOs.Request;
-using Application.DTOs.Response;
+using Application.Contracts.Common;
+using Application.Contracts.Users.Requests;
+using Application.Contracts.Users.Responses;
 using Application.Repositories;
 using AutoMapper;
 using Domain;
@@ -27,26 +27,26 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<ReadResponseDto<PageResult<UserListItemDto>>> GetAllAsync(
+        public async Task<ReadResponse<PageResult<UserListItemResponse>>> GetAllAsync(
             string? keyWord,
             int currentPage,
             int pageSize
         )
         {
             var users = await _userRepository.GetAllWithRolesAsync(keyWord, currentPage, pageSize);
-            return new ReadResponseDto<PageResult<UserListItemDto>>
+            return new ReadResponse<PageResult<UserListItemResponse>>
             {
                 IsSuccess = true,
                 Data = users,
             };
         }
 
-        public async Task<ReadResponseDto<UserDto>> GetByIdAsync(Guid userId)
+        public async Task<ReadResponse<UserResponse>> GetByIdAsync(Guid userId)
         {
             var user = await _userRepository.GetByIdWithRolesAsync(userId);
             if (user == null)
             {
-                return new ReadResponseDto<UserDto>
+                return new ReadResponse<UserResponse>
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UserNotFound,
@@ -54,15 +54,15 @@ namespace Application.Services
                 };
             }
 
-            return new ReadResponseDto<UserDto> { IsSuccess = true, Data = user };
+            return new ReadResponse<UserResponse> { IsSuccess = true, Data = user };
         }
 
-        public async Task<WriteResponseDto> CreateAsync(CreateUserRequestDto request)
+        public async Task<WriteResponse> CreateAsync(CreateUserRequest request)
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UserAlreadyExists,
@@ -70,13 +70,13 @@ namespace Application.Services
                 };
             }
 
-            var newUser = _mapper.Map<CreateUserRequestDto, User>(request);
+            var newUser = _mapper.Map<CreateUserRequest, User>(request);
             newUser.UserName = newUser.Email;
             var result = await _userManager.CreateAsync(newUser, request.Password);
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.CreateFailed,
@@ -86,15 +86,15 @@ namespace Application.Services
                 };
             }
 
-            return new WriteResponseDto { IsSuccess = true };
+            return new WriteResponse { IsSuccess = true };
         }
 
-        public async Task<WriteResponseDto> UpdateAsync(Guid id, UpdateUserRequestDto request)
+        public async Task<WriteResponse> UpdateAsync(Guid id, UpdateUserRequest request)
         {
             var existingUser = await _userManager.FindByIdAsync(id.ToString());
             if (existingUser == null)
             {
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UserNotFound,
@@ -107,7 +107,7 @@ namespace Application.Services
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UpdateFailed,
@@ -117,14 +117,14 @@ namespace Application.Services
                 };
             }
 
-            return new WriteResponseDto { IsSuccess = true };
+            return new WriteResponse { IsSuccess = true };
         }
 
-        public async Task<WriteResponseDto> DeleteAsync(List<Guid> ids)
+        public async Task<WriteResponse> DeleteAsync(List<Guid> ids)
         {
             if (ids == null || ids.Count == 0)
             {
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.InvalidIds,
@@ -135,7 +135,7 @@ namespace Application.Services
             var affected = await _userRepository.DeleteByIdsAsync(ids);
             if (affected == 0)
             {
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UsersNotFound,
@@ -143,10 +143,10 @@ namespace Application.Services
                 };
             }
 
-            return new WriteResponseDto { IsSuccess = true };
+            return new WriteResponse { IsSuccess = true };
         }
 
-        public async Task<WriteResponseDto> ChangeMyPasswordAsync(
+        public async Task<WriteResponse> ChangeMyPasswordAsync(
             Guid id,
             ChangeMyPasswordRequest request
         )
@@ -155,7 +155,7 @@ namespace Application.Services
             if (user == null)
             {
                 var code = ErrorMessages.User.UserNotFound;
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = code,
@@ -167,7 +167,7 @@ namespace Application.Services
             if (sameAsCurrent)
             {
                 var code = ErrorMessages.User.ChangePassword.NewPasswordSameAsCurrent;
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = code,
@@ -188,7 +188,7 @@ namespace Application.Services
                     ? ErrorMessages.Auth.CurrentPasswordIncorrect
                     : ErrorMessages.Auth.ChangePasswordFailed;
 
-                return new WriteResponseDto
+                return new WriteResponse
                 {
                     IsSuccess = false,
                     ErrorCode = code,
@@ -196,7 +196,7 @@ namespace Application.Services
                 };
             }
 
-            return new WriteResponseDto { IsSuccess = true };
+            return new WriteResponse { IsSuccess = true };
         }
     }
 }

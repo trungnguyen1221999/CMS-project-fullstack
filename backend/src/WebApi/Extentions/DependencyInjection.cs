@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+﻿using Application.Contracts.Users.Responses;
 using Application.Repositories;
 using Application.Services;
 using Application.Services.Auth;
@@ -16,7 +16,7 @@ namespace WebApi.Extentions
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(UserDto).Assembly));
+            builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(UserResponse).Assembly));
 
             builder.Services.AddScoped<ISignUpService, SignUpService>();
             builder.Services.AddScoped<ITokenService, TokenService>();

@@ -1,6 +1,6 @@
 using Application.Constants;
-using Application.DTOs.Request.Auth;
-using Application.DTOs.Response.Auth;
+using Application.Contracts.Auth.Requests;
+using Application.Contracts.Auth.Responses;
 using Application.Services.Token;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -28,12 +28,12 @@ namespace Application.Services.Auth
             _configuration = configuration;
         }
 
-        public async Task<SignInResponseDto> SignInAsync(SignInRequestDto request)
+        public async Task<SignInResponse> SignInAsync(SignInRequest request)
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser == null)
             {
-                return new SignInResponseDto
+                return new SignInResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UserNotFound,
@@ -49,7 +49,7 @@ namespace Application.Services.Auth
 
             if (!result.Succeeded)
             {
-                return new SignInResponseDto
+                return new SignInResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.Auth.InvalidPassword,
@@ -71,7 +71,7 @@ namespace Application.Services.Auth
             if (!updateUser.Succeeded)
             {
                 var errors = updateUser.Errors.Select(e => e.Description).ToList();
-                return new SignInResponseDto
+                return new SignInResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UpdateFailed,
@@ -81,7 +81,7 @@ namespace Application.Services.Auth
                 };
             }
 
-            return new SignInResponseDto
+            return new SignInResponse
             {
                 IsSuccess = true,
                 Token = token,

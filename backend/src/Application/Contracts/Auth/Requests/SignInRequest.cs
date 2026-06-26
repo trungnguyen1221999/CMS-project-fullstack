@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace Application.DTOs.Request.Auth
+namespace Application.Contracts.Auth.Requests
 {
-    public class SignInRequestDto
+    public class SignInRequest
     {
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address format")]

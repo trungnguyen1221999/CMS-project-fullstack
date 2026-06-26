@@ -1,6 +1,6 @@
 using Application.Constants;
-using Application.DTOs.Request.Auth;
-using Application.DTOs.Response.Auth;
+using Application.Contracts.Auth.Requests;
+using Application.Contracts.Auth.Responses;
 using AutoMapper;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -18,12 +18,12 @@ namespace Application.Services.Auth
             _mapper = mapper;
         }
 
-        public async Task<SignUpResponseDto> SignUpAsync(SignUpRequestDto request)
+        public async Task<SignUpResponse> SignUpAsync(SignUpRequest request)
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
-                return new SignUpResponseDto
+                return new SignUpResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UserAlreadyExists,
@@ -31,7 +31,7 @@ namespace Application.Services.Auth
                 };
             }
 
-            var user = _mapper.Map<SignUpRequestDto, User>(request);
+            var user = _mapper.Map<SignUpRequest, User>(request);
             user.UserName = user.Email;
             user.CreatedAt = DateTime.UtcNow;
 
@@ -39,7 +39,7 @@ namespace Application.Services.Auth
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
-                return new SignUpResponseDto
+                return new SignUpResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.CreateFailed,
@@ -53,7 +53,7 @@ namespace Application.Services.Auth
             if (!addRole.Succeeded)
             {
                 var errors = addRole.Errors.Select(e => e.Description).ToList();
-                return new SignUpResponseDto
+                return new SignUpResponse
                 {
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.Auth.FailedToAssignRole,
@@ -63,7 +63,7 @@ namespace Application.Services.Auth
                 };
             }
 
-            return new SignUpResponseDto { IsSuccess = true };
+            return new SignUpResponse { IsSuccess = true };
         }
     }
 }

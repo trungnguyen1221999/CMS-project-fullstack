@@ -1,5 +1,5 @@
-﻿using Application.DTOs.Request.Auth;
-using Application.DTOs.Response.Auth;
+﻿using Application.Contracts.Auth.Requests;
+using Application.Contracts.Auth.Responses;
 using Application.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,8 +19,8 @@ namespace WebApi.Controllers.Auth
         }
 
         [HttpPost("signup")]
-        public async Task<ActionResult<SignUpResponseDto>> SignUp(
-            [FromBody] SignUpRequestDto request
+        public async Task<ActionResult<SignUpResponse>> SignUp(
+            [FromBody] SignUpRequest request
         )
         {
             var result = await _signUpService.SignUpAsync(request);
@@ -32,8 +32,8 @@ namespace WebApi.Controllers.Auth
         }
 
         [HttpPost("signin")]
-        public async Task<ActionResult<SignInResponseDto>> SignIn(
-            [FromBody] SignInRequestDto request
+        public async Task<ActionResult<SignInResponse>> SignIn(
+            [FromBody] SignInRequest request
         )
         {
             var result = await _signInService.SignInAsync(request);

@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace Application.DTOs
+namespace Application.Contracts.Users.Requests
 {
     public class ChangeMyPasswordRequest
     {
