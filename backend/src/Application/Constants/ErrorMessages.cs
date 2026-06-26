@@ -15,12 +15,20 @@ namespace Application.Constants
             public const string InvalidIds = "INVALID_IDS";
             public const string CreateFailed = "CREATE_FAILED";
             public const string UpdateFailed = "UPDATE_FAILED";
+
+            public static class ChangePassword
+            {
+                public const string NewPasswordSameAsCurrent =
+                    "NEW_PASSWORD_SAME_AS_CURRENT_PASSWORD";
+            }
         }
 
         public static class Auth
         {
             public const string InvalidPassword = "INVALID_PASSWORD";
             public const string FailedToAssignRole = "FAILED_TO_ASSIGN_ROLE";
+            public const string ChangePasswordFailed = "CHANGE_PASSWORD_FAILED";
+            public const string CurrentPasswordIncorrect = "CURRENT_PASSWORD_INCORRECT";
         }
     }
 }

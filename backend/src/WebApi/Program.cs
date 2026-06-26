@@ -7,6 +7,7 @@ builder
     .ConfigureApplicationServices()
     .ConfigureDatabase("NeonPostgresql")
     .ConfigureIdentity()
+    .ConfigureAuth()
     .AddDI();
 
 var app = builder.Build();

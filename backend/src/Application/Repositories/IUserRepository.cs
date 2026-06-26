@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Common;
+using Application.DTOs;
 using Domain;
 using Domain.Cores.Identity;
 
@@ -14,5 +15,11 @@ namespace Application.Repositories
         );
         Task<int> DeleteByIdsAsync(IEnumerable<Guid> ids);
         Task RemoveUserFromRoles(Guid userId, IEnumerable<string> roleNames);
+
+        Task<OperationResult> ChangeMyPasswordAsync(
+            Guid userId,
+            string currentPassword,
+            string newPassword
+        );
     }
 }

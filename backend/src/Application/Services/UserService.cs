@@ -34,7 +34,11 @@ namespace Application.Services
         )
         {
             var users = await _userRepository.GetAllWithRolesAsync(keyWord, currentPage, pageSize);
-            return new ReadResponseDto<PageResult<UserListItemDto>> { IsSuccess = true, Data = users };
+            return new ReadResponseDto<PageResult<UserListItemDto>>
+            {
+                IsSuccess = true,
+                Data = users,
+            };
         }
 
         public async Task<ReadResponseDto<UserDto>> GetByIdAsync(Guid userId)
@@ -136,6 +140,36 @@ namespace Application.Services
                     IsSuccess = false,
                     ErrorCode = ErrorMessages.User.UsersNotFound,
                     ErrorMessage = ErrorMessages.User.UsersNotFound,
+                };
+            }
+
+            return new WriteResponseDto { IsSuccess = true };
+        }
+
+        public async Task<WriteResponseDto> ChangeMyPasswordAsync(
+            Guid id,
+            ChangeMyPasswordRequest request
+        )
+        {
+            var result = await _userRepository.ChangeMyPasswordAsync(
+                id,
+                request.CurrentPassword,
+                request.NewPassword
+            );
+            if (!result.Succeeded)
+            {
+                var fallbackCode = ErrorMessages.Auth.ChangePasswordFailed;
+                var errorCode = string.IsNullOrWhiteSpace(result.ErrorCode)
+                    ? fallbackCode
+                    : result.ErrorCode;
+
+                return new WriteResponseDto
+                {
+                    IsSuccess = false,
+                    ErrorCode = errorCode,
+                    ErrorMessage = result.Errors.Any()
+                        ? string.Join(" | ", result.Errors)
+                        : errorCode,
                 };
             }
 

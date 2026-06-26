@@ -18,5 +18,7 @@ namespace Application.Services
         Task<WriteResponseDto> UpdateAsync(Guid id, UpdateUserRequestDto request);
 
         Task<WriteResponseDto> DeleteAsync(List<Guid> ids);
+
+        Task<WriteResponseDto> ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request);
     }
 }

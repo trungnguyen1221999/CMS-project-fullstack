@@ -3,12 +3,15 @@ using Application.DTOs.Request;
 using Application.DTOs.Response;
 using Application.Services;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Extentions;
 
 namespace WebApi.Controllers
 {
     [Route("api/users")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -89,6 +92,23 @@ namespace WebApi.Controllers
                     : BadRequest(result);
             }
 
+            return Ok(result);
+        }
+
+        [HttpPut("change-password")]
+        public async Task<ActionResult<WriteResponseDto>> ChangeMyPassword(
+            [FromBody] ChangeMyPasswordRequest request
+        )
+        {
+            var result = await _userService.ChangeMyPasswordAsync(User.GetUserId(), request);
+            if (!result.IsSuccess)
+            {
+                return
+                    result.ErrorCode == Application.Constants.ErrorMessages.User.UserNotFound
+                    || result.ErrorCode == Application.Constants.ErrorMessages.User.UsersNotFound
+                    ? NotFound(result)
+                    : BadRequest(result);
+            }
             return Ok(result);
         }
     }

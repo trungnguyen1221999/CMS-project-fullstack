@@ -11,6 +11,7 @@ namespace WebApi.Extentions
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 
