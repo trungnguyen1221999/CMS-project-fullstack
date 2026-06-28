@@ -5,5 +5,7 @@
     <Project Path="src/Infrastructure/Infrastructure.csproj" Id="127b7cbe-adfd-4287-9412-e8132e73c406" />
     <Project Path="src/WebApi/WebApi.csproj" Id="0971af37-f3ed-4db3-8abf-598fb7c37156" />
   </Folder>
-  <Folder Name="/test/" />
+  <Folder Name="/test/">
+    <Project Path="test/Application.Tests/Application.Tests.csproj" Id="81134044-0862-4e59-9d83-efbb67625035" />
+  </Folder>
 </Solution>

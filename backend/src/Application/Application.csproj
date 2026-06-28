@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\**" />
+    <Compile Remove="DTOs\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="DTOs\**" />
+    <None Remove="Common\**" />
+    <None Remove="DTOs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
@@ -14,11 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Common\" />
-    <Folder Include="DTOs\" />
   </ItemGroup>
 
 </Project>
