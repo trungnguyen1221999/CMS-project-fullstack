@@ -15,17 +15,11 @@ namespace Infrastructure.Services.Token
     {
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
 
-        public TokenService(
-            IConfiguration configuration,
-            UserManager<User> userManager,
-            RoleManager<Role> roleManager
-        )
+        public TokenService(IConfiguration configuration, UserManager<User> userManager)
         {
             _configuration = configuration;
             _userManager = userManager;
-            _roleManager = roleManager;
         }
 
         public async Task<string> GenerateAccessToken(User user)

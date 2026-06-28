@@ -7,5 +7,7 @@
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/Application.Tests/Application.Tests.csproj" Id="81134044-0862-4e59-9d83-efbb67625035" />
+    <Project Path="test/Infrastructure.Test/Infrastructure.Test.csproj" Id="359f8f10-3cf6-4ca3-8c17-897a5833c8f1" />
+    <Project Path="test/Test.Shared/Test.Shared.csproj" />
   </Folder>
 </Solution>
