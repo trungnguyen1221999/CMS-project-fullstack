@@ -20,5 +20,7 @@ namespace Application.Services
         Task<WriteResponse> DeleteAsync(List<Guid> ids);
 
         Task<WriteResponse> ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request);
+
+        Task<WriteResponse> SetPasswordAsync(Guid id, SetPasswordRequest request);
     }
 }

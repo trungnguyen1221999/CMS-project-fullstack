@@ -32,14 +32,7 @@ namespace Application.Services.Auth
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser == null)
-            {
-                return new SignInResponse
-                {
-                    IsSuccess = false,
-                    ErrorCode = ErrorMessages.User.UserNotFound,
-                    ErrorMessage = ErrorMessages.User.UserNotFound,
-                };
-            }
+                return SignInResponse.Failure(ErrorMessages.User.UserNotFound);
 
             var result = await _signInManager.CheckPasswordSignInAsync(
                 existingUser,
@@ -48,14 +41,7 @@ namespace Application.Services.Auth
             );
 
             if (!result.Succeeded)
-            {
-                return new SignInResponse
-                {
-                    IsSuccess = false,
-                    ErrorCode = ErrorMessages.Auth.InvalidPassword,
-                    ErrorMessage = ErrorMessages.Auth.InvalidPassword,
-                };
-            }
+                return SignInResponse.Failure(ErrorMessages.Auth.InvalidPassword);
 
             var token = await _tokenService.GenerateAccessToken(existingUser);
             var refreshToken = _tokenService.GenerateRefreshToken();
@@ -69,24 +55,12 @@ namespace Application.Services.Auth
 
             var updateUser = await _userManager.UpdateAsync(existingUser);
             if (!updateUser.Succeeded)
-            {
-                var errors = updateUser.Errors.Select(e => e.Description).ToList();
-                return new SignInResponse
-                {
-                    IsSuccess = false,
-                    ErrorCode = ErrorMessages.User.UpdateFailed,
-                    ErrorMessage = errors.Any()
-                        ? string.Join(" | ", errors)
-                        : ErrorMessages.User.UpdateFailed,
-                };
-            }
+                return SignInResponse.Failure(
+                    ErrorMessages.User.UpdateFailed,
+                    string.Join(" | ", updateUser.Errors.Select(e => e.Description))
+                );
 
-            return new SignInResponse
-            {
-                IsSuccess = true,
-                Token = token,
-                RefreshToken = refreshToken,
-            };
+            return SignInResponse.Success(token, refreshToken);
         }
     }
 }

@@ -23,14 +23,7 @@ namespace Application.Services.Auth
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
-            {
-                return new SignUpResponse
-                {
-                    IsSuccess = false,
-                    ErrorCode = ErrorMessages.User.UserAlreadyExists,
-                    ErrorMessage = ErrorMessages.User.UserAlreadyExists,
-                };
-            }
+                return SignUpResponse.Failure(ErrorMessages.User.UserAlreadyExists);
 
             var user = _mapper.Map<SignUpRequest, User>(request);
             user.UserName = user.Email;
@@ -38,33 +31,19 @@ namespace Application.Services.Auth
 
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
-            {
-                var errors = result.Errors.Select(e => e.Description).ToList();
-                return new SignUpResponse
-                {
-                    IsSuccess = false,
-                    ErrorCode = ErrorMessages.User.CreateFailed,
-                    ErrorMessage = errors.Any()
-                        ? string.Join(" | ", errors)
-                        : ErrorMessages.User.CreateFailed,
-                };
-            }
+                return SignUpResponse.Failure(
+                    ErrorMessages.User.CreateFailed,
+                    string.Join(" | ", result.Errors.Select(e => e.Description))
+                );
 
             var addRole = await _userManager.AddToRoleAsync(user, Roles.User);
             if (!addRole.Succeeded)
-            {
-                var errors = addRole.Errors.Select(e => e.Description).ToList();
-                return new SignUpResponse
-                {
-                    IsSuccess = false,
-                    ErrorCode = ErrorMessages.Auth.FailedToAssignRole,
-                    ErrorMessage = errors.Any()
-                        ? string.Join(" | ", errors)
-                        : ErrorMessages.Auth.FailedToAssignRole,
-                };
-            }
+                return SignUpResponse.Failure(
+                    ErrorMessages.Auth.FailedToAssignRole,
+                    string.Join(" | ", addRole.Errors.Select(e => e.Description))
+                );
 
-            return new SignUpResponse { IsSuccess = true };
+            return SignUpResponse.Success();
         }
     }
 }
