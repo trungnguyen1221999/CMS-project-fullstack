@@ -101,7 +101,8 @@ namespace WebApi.Controllers
             [FromBody] ChangeMyPasswordRequest request
         )
         {
-            var result = await _userService.ChangeMyPasswordAsync(User.GetUserId(), request);
+            var userId = User.GetUserId();
+            var result = await _userService.ChangeMyPasswordAsync(userId, request);
             if (!result.IsSuccess)
             {
                 return
