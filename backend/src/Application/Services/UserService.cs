@@ -2,7 +2,7 @@ using Application.Constants;
 using Application.Contracts.Common;
 using Application.Contracts.Users.Requests;
 using Application.Contracts.Users.Responses;
-using Application.Repositories;
+using Application.UnitOfWork;
 using AutoMapper;
 using Domain;
 using Domain.Cores.Identity;
@@ -12,19 +12,19 @@ namespace Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
         private readonly UserManager<User> _userManager;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
         public UserService(
-            IUserRepository userRepository,
             UserManager<User> userManager,
-            IMapper mapper
+            IMapper mapper,
+            IUnitOfWork unitOfWork
         )
         {
-            _userRepository = userRepository;
             _userManager = userManager;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ReadResponse<PageResult<UserListItemResponse>>> GetAllAsync(
@@ -33,13 +33,13 @@ namespace Application.Services
             int pageSize
         )
         {
-            var users = await _userRepository.GetAllWithRolesAsync(keyWord, currentPage, pageSize);
+            var users = await _unitOfWork.Users.GetAllWithRolesAsync(keyWord, currentPage, pageSize);
             return ReadResponse<PageResult<UserListItemResponse>>.Success(users);
         }
 
         public async Task<ReadResponse<UserResponse>> GetByIdAsync(Guid userId)
         {
-            var user = await _userRepository.GetByIdWithRolesAsync(userId);
+            var user = await _unitOfWork.Users.GetByIdWithRolesAsync(userId);
             if (user == null)
                 return ReadResponse<UserResponse>.Failure(ErrorMessages.User.UserNotFound);
 
@@ -80,7 +80,7 @@ namespace Application.Services
             if (ids == null || ids.Count == 0)
                 return WriteResponse.Failure(ErrorMessages.User.InvalidIds);
 
-            var affected = await _userRepository.DeleteByIdsAsync(ids);
+            var affected = await _unitOfWork.Users.DeleteByIdsAsync(ids);
             if (affected == 0)
                 return WriteResponse.Failure(ErrorMessages.User.UsersNotFound);
 
@@ -153,6 +153,24 @@ namespace Application.Services
                 return WriteResponse.Failure(
                     ErrorMessages.User.ChangeEmailFailed,
                     FormatErrors(result)
+                );
+            return WriteResponse.Success();
+        }
+
+        public async Task<WriteResponse> AssignRolesToUserAsync(Guid id, string[] roles)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _unitOfWork.Users.RemoveUserFromRoles(id, currentRoles);
+
+            var addRoles = await _userManager.AddToRolesAsync(user, roles);
+            if (!addRoles.Succeeded)
+                return WriteResponse.Failure(
+                    ErrorMessages.User.AssignRolesFailed,
+                    FormatErrors(addRoles)
                 );
             return WriteResponse.Success();
         }

@@ -1,5 +1,6 @@
 ﻿using Application.Repositories;
 using Infrastructure;
+using Infrastructure.Repositories;
 
 namespace Application.UnitOfWork
 {
@@ -8,10 +9,10 @@ namespace Application.UnitOfWork
         private readonly ApplicationDbContext _context;
         public IUserRepository Users { get; }
 
-        public UnitOfWork(ApplicationDbContext context, IUserRepository user)
+        public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
-            Users = user;
+            Users = new UserRepository(context);
         }
 
         public async Task<int> CompleteAsync()
