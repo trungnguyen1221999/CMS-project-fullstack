@@ -1,10 +1,10 @@
 ﻿using Application.Contracts.Users.Responses;
+using Application.Repositories;
 using Domain;
 using Domain.Cores.Identity;
-using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Repositories
+namespace Infrastructure.Repositories
 {
     public class UserRepository : RepositoryBase<User, Guid>, IUserRepository
     {
@@ -188,12 +188,12 @@ namespace Application.Repositories
             {
                 var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
                 if (role == null)
-                    return;
+                    continue;
                 var userRole = await _context.UserRoles.FirstOrDefaultAsync(r =>
                     r.UserId == userId && r.RoleId == role.Id
                 );
                 if (userRole == null)
-                    return;
+                    continue;
 
                 _context.UserRoles.Remove(userRole);
             }

@@ -1,5 +1,5 @@
 using Infrastructure.Extensions;
-using WebApi.Extentions;
+using WebApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

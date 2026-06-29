@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
-using Infrastructure;
+using Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Repositories
+namespace Infrastructure.Repositories
 {
     public class RepositoryBase<T, TKey> : IRepository<T, TKey>
         where T : class

@@ -6,7 +6,7 @@ using Application.Services;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Extentions;
+using WebApi.Extensions;
 
 namespace WebApi.Controllers
 {

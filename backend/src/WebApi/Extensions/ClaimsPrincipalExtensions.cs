@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using Domain.Constants;
 
-namespace WebApi.Extentions
+namespace WebApi.Extensions
 {
     public static class ClaimsPrincipalExtensions
     {

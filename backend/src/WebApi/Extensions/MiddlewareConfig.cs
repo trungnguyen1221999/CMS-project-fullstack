@@ -1,4 +1,4 @@
-namespace WebApi.Extentions
+namespace WebApi.Extensions
 {
     public static class MiddlewareConfig
     {

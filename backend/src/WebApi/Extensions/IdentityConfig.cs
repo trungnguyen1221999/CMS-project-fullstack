@@ -2,7 +2,7 @@
 using Infrastructure;
 using Microsoft.AspNetCore.Identity;
 
-namespace WebApi.Extentions
+namespace WebApi.Extensions
 {
     public static class IdentityConfig
     {

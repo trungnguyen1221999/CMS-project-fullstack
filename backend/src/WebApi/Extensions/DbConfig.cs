@@ -1,7 +1,7 @@
 ﻿using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace WebApi.Extentions
+namespace WebApi.Extensions
 {
     public static class DbConfig
     {

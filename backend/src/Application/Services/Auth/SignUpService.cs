@@ -2,6 +2,7 @@ using Application.Constants;
 using Application.Contracts.Auth.Requests;
 using Application.Contracts.Auth.Responses;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 
@@ -49,7 +50,7 @@ namespace Application.Services.Auth
                 };
             }
 
-            var addRole = await _userManager.AddToRoleAsync(user, "User");
+            var addRole = await _userManager.AddToRoleAsync(user, Roles.User);
             if (!addRole.Succeeded)
             {
                 var errors = addRole.Errors.Select(e => e.Description).ToList();

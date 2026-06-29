@@ -4,9 +4,10 @@ using Application.Services;
 using Application.Services.Auth;
 using Application.Services.Token;
 using Application.UnitOfWork;
+using Infrastructure.Repositories;
 using Infrastructure.Services.Token;
 
-namespace WebApi.Extentions
+namespace WebApi.Extensions
 {
     public static class DependencyInjection
     {

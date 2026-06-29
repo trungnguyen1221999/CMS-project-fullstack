@@ -24,7 +24,7 @@ namespace Application.Contracts.Users.Requests
 
         public bool IsActive { get; set; }
 
-        [Range(0, double.MaxValue)]
+        [Range(0, (double)decimal.MaxValue)]
         public decimal RoyaltyAmountPerPost { get; set; }
 
         public class AutoMapperProfiles : Profile
