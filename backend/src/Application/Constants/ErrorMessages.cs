@@ -16,6 +16,7 @@ namespace Application.Constants
             public const string CreateFailed = "CREATE_FAILED";
             public const string UpdateFailed = "UPDATE_FAILED";
             public const string SetPasswordFailed = "SET_PASSWORD_FAILED";
+            public const string ChangeEmailFailed = "CHANGE_EMAIL_FAILED";
 
             public static class ChangePassword
             {

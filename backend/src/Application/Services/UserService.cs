@@ -56,10 +56,7 @@ namespace Application.Services
             newUser.UserName = newUser.Email;
             var result = await _userManager.CreateAsync(newUser, request.Password);
             if (!result.Succeeded)
-                return WriteResponse.Failure(
-                    ErrorMessages.User.CreateFailed,
-                    FormatErrors(result)
-                );
+                return WriteResponse.Failure(ErrorMessages.User.CreateFailed, FormatErrors(result));
 
             return WriteResponse.Success();
         }
@@ -73,10 +70,7 @@ namespace Application.Services
             _mapper.Map(request, existingUser);
             var result = await _userManager.UpdateAsync(existingUser);
             if (!result.Succeeded)
-                return WriteResponse.Failure(
-                    ErrorMessages.User.UpdateFailed,
-                    FormatErrors(result)
-                );
+                return WriteResponse.Failure(ErrorMessages.User.UpdateFailed, FormatErrors(result));
 
             return WriteResponse.Success();
         }
@@ -145,6 +139,21 @@ namespace Application.Services
                     FormatErrors(result)
                 );
 
+            return WriteResponse.Success();
+        }
+
+        public async Task<WriteResponse> ChangeEmailAsync(Guid id, ChangeEmailRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, request.Email);
+            var result = await _userManager.ChangeEmailAsync(user, request.Email, token);
+            if (!result.Succeeded)
+                return WriteResponse.Failure(
+                    ErrorMessages.User.ChangeEmailFailed,
+                    FormatErrors(result)
+                );
             return WriteResponse.Success();
         }
 

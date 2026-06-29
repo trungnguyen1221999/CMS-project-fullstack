@@ -22,5 +22,7 @@ namespace Application.Services
         Task<WriteResponse> ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request);
 
         Task<WriteResponse> SetPasswordAsync(Guid id, SetPasswordRequest request);
+
+        Task<WriteResponse> ChangeEmailAsync(Guid id, ChangeEmailRequest request);
     }
 }

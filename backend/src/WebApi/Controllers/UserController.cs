@@ -37,10 +37,7 @@ namespace WebApi.Controllers
         public async Task<ActionResult<ReadResponse<UserResponse>>> GetUserById([FromRoute] Guid id)
         {
             var result = await _userService.GetByIdAsync(id);
-            if (!result.IsSuccess)
-                return NotFound(result);
-
-            return Ok(result);
+            return ToActionResult(result);
         }
 
         [HttpPost]
@@ -49,9 +46,7 @@ namespace WebApi.Controllers
         )
         {
             var result = await _userService.CreateAsync(request);
-            if (!result.IsSuccess)
-                return BadRequest(result);
-            return Ok(result);
+            return ToActionResult(result);
         }
 
         [HttpPut("{id}")]
@@ -61,39 +56,17 @@ namespace WebApi.Controllers
         )
         {
             if (request == null)
-            {
-                return BadRequest(
-                    new WriteResponse
-                    {
-                        IsSuccess = false,
-                        ErrorCode = ErrorMessages.Common.InvalidRequest,
-                        ErrorMessage = ErrorMessages.Common.InvalidRequest,
-                    }
-                );
-            }
+                return BadRequest(WriteResponse.Failure(ErrorMessages.Common.InvalidRequest));
 
             var result = await _userService.UpdateAsync(id, request);
-            if (!result.IsSuccess)
-            {
-                return result.ErrorCode == ErrorMessages.User.UserNotFound
-                    ? NotFound(result)
-                    : BadRequest(result);
-            }
-            return Ok(result);
+            return ToActionResult(result);
         }
 
         [HttpDelete]
         public async Task<ActionResult<WriteResponse>> DeleteUsers([FromBody] List<Guid> ids)
         {
             var result = await _userService.DeleteAsync(ids);
-            if (!result.IsSuccess)
-            {
-                return result.ErrorCode == ErrorMessages.User.UsersNotFound
-                    ? NotFound(result)
-                    : BadRequest(result);
-            }
-
-            return Ok(result);
+            return ToActionResult(result);
         }
 
         [HttpPut("change-password")]
@@ -103,15 +76,41 @@ namespace WebApi.Controllers
         {
             var userId = User.GetUserId();
             var result = await _userService.ChangeMyPasswordAsync(userId, request);
-            if (!result.IsSuccess)
-            {
-                return
-                    result.ErrorCode == ErrorMessages.User.UserNotFound
-                    || result.ErrorCode == ErrorMessages.User.UsersNotFound
-                    ? NotFound(result)
-                    : BadRequest(result);
-            }
-            return Ok(result);
+            return ToActionResult(result);
         }
+
+        [HttpPut("{id}/set-password")]
+        public async Task<ActionResult<WriteResponse>> SetPassword(
+            [FromRoute] Guid id,
+            [FromBody] SetPasswordRequest request
+        )
+        {
+            var result = await _userService.SetPasswordAsync(id, request);
+            return ToActionResult(result);
+        }
+
+        [HttpPut("{id}/change-email")]
+        public async Task<ActionResult<WriteResponse>> ChangeEmail(
+            [FromRoute] Guid id,
+            [FromBody] ChangeEmailRequest request
+        )
+        {
+            var result = await _userService.ChangeEmailAsync(id, request);
+            return ToActionResult(result);
+        }
+
+        private ActionResult ToActionResult(WriteResponse result)
+        {
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return IsNotFoundError(result.ErrorCode)
+                ? NotFound(result)
+                : BadRequest(result);
+        }
+
+        private static bool IsNotFoundError(string? errorCode) =>
+            errorCode is ErrorMessages.User.UserNotFound
+                or ErrorMessages.User.UsersNotFound;
     }
 }
