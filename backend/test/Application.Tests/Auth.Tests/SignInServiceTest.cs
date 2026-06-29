@@ -2,18 +2,18 @@
 using Application.Contracts.Auth.Requests;
 using Application.Services.Auth;
 using Application.Services.Token;
-using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Test.Shared.Mocks;
+using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.Auth.Tests
 {
     public class SignInServiceTest
     {
-        private readonly Mock<UserManager<User>> _userManagerMock;
-        private readonly Mock<SignInManager<User>> _signInManagerMock;
+        private readonly Mock<UserManager<AppUser>> _userManagerMock;
+        private readonly Mock<SignInManager<AppUser>> _signInManagerMock;
         private readonly Mock<ITokenService> _tokenServiceMock;
         private readonly IConfiguration _configuration;
         private readonly SignInService _signInService;
@@ -25,10 +25,9 @@ namespace Application.Tests.Auth.Tests
             _tokenServiceMock = new Mock<ITokenService>();
 
             _configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["JwtSettings:RefreshTokenExpiryDays"] = "7",
-                })
+                .AddInMemoryCollection(
+                    new Dictionary<string, string?> { ["JwtSettings:RefreshTokenExpiryDays"] = "7" }
+                )
                 .Build();
 
             _signInService = new SignInService(
@@ -39,30 +38,24 @@ namespace Application.Tests.Auth.Tests
             );
         }
 
-        private SignInRequest CreateValidRequest()
-            => new() { Email = "abc@gmail.com", Password = "123456" };
+        private SignInRequest CreateValidRequest() =>
+            new() { Email = "abc@gmail.com", Password = "123456" };
 
-        private User SetupUserExist(SignInRequest request)
+        private AppUser SetupUserExist(SignInRequest request)
         {
-            var user = new User { Id = Guid.NewGuid(), Email = request.Email };
+            var user = new AppUser { Id = Guid.NewGuid(), Email = request.Email };
             _userManagerMock.Setup(x => x.FindByEmailAsync(request.Email)).ReturnsAsync(user);
             return user;
         }
 
-        private void SetupSuccessfulSignIn(User user, SignInRequest request)
+        private void SetupSuccessfulSignIn(AppUser user, SignInRequest request)
         {
             _signInManagerMock
                 .Setup(x => x.CheckPasswordSignInAsync(user, request.Password, false))
                 .ReturnsAsync(SignInResult.Success);
-            _tokenServiceMock
-                .Setup(x => x.GenerateAccessToken(user))
-                .ReturnsAsync("mocked_token");
-            _tokenServiceMock
-                .Setup(x => x.GenerateRefreshToken())
-                .Returns("mocked_refresh_token");
-            _userManagerMock
-                .Setup(x => x.UpdateAsync(user))
-                .ReturnsAsync(IdentityResult.Success);
+            _tokenServiceMock.Setup(x => x.GenerateAccessToken(user)).ReturnsAsync("mocked_token");
+            _tokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns("mocked_refresh_token");
+            _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
         }
 
         // ── Happy Path ──
@@ -93,7 +86,7 @@ namespace Application.Tests.Auth.Tests
             var request = CreateValidRequest();
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(request.Email))
-                .ReturnsAsync((User?)null);
+                .ReturnsAsync((AppUser?)null);
 
             // Act
             var result = await _signInService.SignInAsync(request);
@@ -102,8 +95,9 @@ namespace Application.Tests.Auth.Tests
             Assert.False(result.IsSuccess);
             Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
             _signInManagerMock.Verify(
-                x => x.CheckPasswordSignInAsync(It.IsAny<User>(), It.IsAny<string>(), false),
-                Times.Never);
+                x => x.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), false),
+                Times.Never
+            );
         }
 
         // ── Invalid Password ──
@@ -124,7 +118,7 @@ namespace Application.Tests.Auth.Tests
             // Assert
             Assert.False(result.IsSuccess);
             Assert.Equal(ErrorMessages.Auth.InvalidPassword, result.ErrorCode);
-            _tokenServiceMock.Verify(x => x.GenerateAccessToken(It.IsAny<User>()), Times.Never);
+            _tokenServiceMock.Verify(x => x.GenerateAccessToken(It.IsAny<AppUser>()), Times.Never);
         }
 
         // ── Update User Failed ──
@@ -142,7 +136,9 @@ namespace Application.Tests.Auth.Tests
             _tokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns("refresh");
             _userManagerMock
                 .Setup(x => x.UpdateAsync(user))
-                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "DB error" }));
+                .ReturnsAsync(
+                    IdentityResult.Failed(new IdentityError { Description = "DB error" })
+                );
 
             // Act
             var result = await _signInService.SignInAsync(request);

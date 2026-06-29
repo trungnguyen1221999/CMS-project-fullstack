@@ -6,12 +6,13 @@ using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using Test.Shared.Mocks;
+using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.Auth.Tests
 {
     public class SignUpServiceTest
     {
-        private readonly Mock<UserManager<User>> _userManagerMock;
+        private readonly Mock<UserManager<AppUser>> _userManagerMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly ISignUpService _signUpService;
 
@@ -37,15 +38,15 @@ namespace Application.Tests.Auth.Tests
         /// <summary>
         /// Setup: Email does not exist, Map request to User.
         /// </summary>
-        private User SetupNewUserFlow(SignUpRequest request)
+        private AppUser SetupNewUserFlow(SignUpRequest request)
         {
-            var user = new User { Email = request.Email };
+            var user = new AppUser { Email = request.Email };
 
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(request.Email))
-                .ReturnsAsync((User?)null);
+                .ReturnsAsync((AppUser?)null);
 
-            _mapperMock.Setup(x => x.Map<SignUpRequest, User>(request)).Returns(user);
+            _mapperMock.Setup(x => x.Map<SignUpRequest, AppUser>(request)).Returns(user);
 
             return user;
         }
@@ -59,7 +60,7 @@ namespace Application.Tests.Auth.Tests
             var request = CreateValidRequest();
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(request.Email))
-                .ReturnsAsync(new User { Email = request.Email });
+                .ReturnsAsync(new AppUser { Email = request.Email });
 
             // Act
             var result = await _signUpService.SignUpAsync(request);
@@ -68,7 +69,7 @@ namespace Application.Tests.Auth.Tests
             Assert.False(result.IsSuccess);
             Assert.Equal(ErrorMessages.User.UserAlreadyExists, result.ErrorCode);
             _userManagerMock.Verify(
-                x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()),
+                x => x.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
                 Times.Never
             );
         }
@@ -81,7 +82,7 @@ namespace Application.Tests.Auth.Tests
             SetupNewUserFlow(request);
 
             _userManagerMock
-                .Setup(x => x.CreateAsync(It.IsAny<User>(), request.Password))
+                .Setup(x => x.CreateAsync(It.IsAny<AppUser>(), request.Password))
                 .ReturnsAsync(
                     IdentityResult.Failed(new IdentityError { Description = "Password too weak" })
                 );
@@ -94,7 +95,7 @@ namespace Application.Tests.Auth.Tests
             Assert.Equal(ErrorMessages.User.CreateFailed, result.ErrorCode);
             Assert.Contains("Password too weak", result.ErrorMessage);
             _userManagerMock.Verify(
-                x => x.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()),
+                x => x.AddToRoleAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
                 Times.Never
             );
         }
