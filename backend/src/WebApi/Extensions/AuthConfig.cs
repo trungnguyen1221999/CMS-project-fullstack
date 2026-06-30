@@ -39,6 +39,7 @@ namespace WebApi.Extensions
                         ValidAudience = audience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
                         ClockSkew = TimeSpan.Zero,
+                        RoleClaimType = "roles",
                     };
                 });
 
