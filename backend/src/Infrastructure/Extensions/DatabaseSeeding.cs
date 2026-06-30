@@ -16,6 +16,8 @@ namespace Infrastructure.Extensions
 
             try
             {
+                var logger = services.GetRequiredService<ILogger<ApplicationDbContext>>();
+
                 // 1. Automatically run migrations
                 var context = services.GetRequiredService<ApplicationDbContext>();
                 await context.Database.MigrateAsync();
@@ -26,7 +28,7 @@ namespace Infrastructure.Extensions
 
                 // 3. Trigger the main data seeder
                 await DataSeeder.SeedEverythingAsync(userManager, roleManager);
-                Console.WriteLine("----> CMS Database Migration & Seeding completed successfully!");
+                logger.LogInformation("CMS Database Migration & Seeding completed successfully.");
             }
             catch (Exception ex)
             {

@@ -1,0 +1,11 @@
+2026-06-30 09:54:38.635 +03:00 [INF] Now listening on: https://localhost:7147
+2026-06-30 09:54:38.692 +03:00 [INF] Now listening on: http://localhost:5133
+2026-06-30 09:54:38.773 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-30 09:54:38.775 +03:00 [INF] Hosting environment: Development
+2026-06-30 09:54:38.776 +03:00 [INF] Content root path: C:\Users\trung.nguyen\Documents\GitHub\CMS-project-fullstack\backend\src\WebApi
+2026-06-30 09:57:06.888 +03:00 [INF] CMS Database Migration & Seeding completed successfully.
+2026-06-30 09:57:07.213 +03:00 [INF] Now listening on: https://localhost:7147
+2026-06-30 09:57:07.216 +03:00 [INF] Now listening on: http://localhost:5133
+2026-06-30 09:57:07.433 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-30 09:57:07.435 +03:00 [INF] Hosting environment: Development
+2026-06-30 09:57:07.437 +03:00 [INF] Content root path: C:\Users\trung.nguyen\Documents\GitHub\CMS-project-fullstack\backend\src\WebApi
