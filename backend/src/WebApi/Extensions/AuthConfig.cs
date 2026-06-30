@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using WebApi.Authorization;
 
 namespace WebApi.Extensions
 {
@@ -40,6 +42,8 @@ namespace WebApi.Extensions
                     };
                 });
 
+            builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+            builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
             builder.Services.AddAuthorization();
 
             return builder;

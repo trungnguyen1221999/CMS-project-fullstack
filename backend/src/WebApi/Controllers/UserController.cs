@@ -4,8 +4,10 @@ using Application.Contracts.Users.Requests;
 using Application.Contracts.Users.Responses;
 using Application.Services;
 using Domain;
+using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Authorization;
 using WebApi.Extensions;
 
 namespace WebApi.Controllers
@@ -23,6 +25,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Users.View)]
         public async Task<ActionResult<ReadResponse<PageResult<UserListItemResponse>>>> GetAllUsers(
             [FromQuery] string? keyWord,
             [FromQuery] int currentPage = 1,
@@ -34,6 +37,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [HasPermission(Permissions.Users.View)]
         public async Task<ActionResult<ReadResponse<UserResponse>>> GetUserById([FromRoute] Guid id)
         {
             var result = await _userService.GetByIdAsync(id);
@@ -41,6 +45,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Users.Create)]
         public async Task<ActionResult<WriteResponse>> CreateUser(
             [FromBody] CreateUserRequest request
         )
@@ -50,6 +55,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [HasPermission(Permissions.Users.Edit)]
         public async Task<ActionResult<WriteResponse>> UpdateUser(
             [FromRoute] Guid id,
             [FromBody] UpdateUserRequest? request
@@ -63,6 +69,7 @@ namespace WebApi.Controllers
         }
 
         [HttpDelete]
+        [HasPermission(Permissions.Users.Delete)]
         public async Task<ActionResult<WriteResponse>> DeleteUsers([FromBody] List<Guid> ids)
         {
             var result = await _userService.DeleteAsync(ids);
@@ -80,6 +87,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("{id}/set-password")]
+        [HasPermission(Permissions.Users.Edit)]
         public async Task<ActionResult<WriteResponse>> SetPassword(
             [FromRoute] Guid id,
             [FromBody] SetPasswordRequest request
@@ -90,6 +98,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("{id}/change-email")]
+        [HasPermission(Permissions.Users.Edit)]
         public async Task<ActionResult<WriteResponse>> ChangeEmail(
             [FromRoute] Guid id,
             [FromBody] ChangeEmailRequest request
@@ -99,7 +108,8 @@ namespace WebApi.Controllers
             return ToActionResult(result);
         }
 
-        [HttpPut("{id}/assign-users")]
+        [HttpPut("{id}/assign-roles")]
+        [HasPermission(Permissions.Users.Edit)]
         public async Task<ActionResult<WriteResponse>> AssignRolesToUser(
             [FromRoute] Guid id,
             [FromBody] string[] roles
