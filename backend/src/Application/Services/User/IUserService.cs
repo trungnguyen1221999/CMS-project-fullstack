@@ -3,7 +3,7 @@ using Application.Contracts.Users.Requests;
 using Application.Contracts.Users.Responses;
 using Domain;
 
-namespace Application.Services
+namespace Application.Services.User
 {
     public interface IUserService
     {

@@ -32,6 +32,8 @@ namespace Application.Constants
             public const string FailedToAssignRole = "FAILED_TO_ASSIGN_ROLE";
             public const string ChangePasswordFailed = "CHANGE_PASSWORD_FAILED";
             public const string CurrentPasswordIncorrect = "CURRENT_PASSWORD_INCORRECT";
+            public const string ResetPasswordFailed = "RESET_PASSWORD_FAILED";
+            public const string CodeInvalid = "CODE_INVALID";
         }
     }
 }

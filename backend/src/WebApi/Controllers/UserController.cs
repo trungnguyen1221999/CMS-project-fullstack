@@ -2,7 +2,7 @@
 using Application.Contracts.Common;
 using Application.Contracts.Users.Requests;
 using Application.Contracts.Users.Responses;
-using Application.Services;
+using Application.Services.User;
 using Domain;
 using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;

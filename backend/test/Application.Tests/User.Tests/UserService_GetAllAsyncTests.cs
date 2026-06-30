@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Application.Contracts.Common;
-using Application.Contracts.Users.Responses;
+﻿using Application.Contracts.Users.Responses;
 using Domain;
-using Domain.Cores.Identity;
 using Moq;
 
 namespace Application.Tests.User.Tests

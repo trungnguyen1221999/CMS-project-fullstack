@@ -3,17 +3,17 @@ using Application.Contracts.Auth.Requests;
 using Application.Contracts.Auth.Responses;
 using AutoMapper;
 using Domain.Constants;
-using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
+using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.Auth
 {
     public class SignUpService : ISignUpService
     {
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
 
-        public SignUpService(UserManager<User> userManager, IMapper mapper)
+        public SignUpService(UserManager<AppUser> userManager, IMapper mapper)
         {
             _userManager = userManager;
             _mapper = mapper;
@@ -25,7 +25,7 @@ namespace Application.Services.Auth
             if (existingUser != null)
                 return SignUpResponse.Failure(ErrorMessages.User.UserAlreadyExists);
 
-            var user = _mapper.Map<SignUpRequest, User>(request);
+            var user = _mapper.Map<SignUpRequest, AppUser>(request);
             user.UserName = user.Email;
             user.CreatedAt = DateTime.UtcNow;
 

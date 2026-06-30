@@ -2,22 +2,22 @@ using Application.Constants;
 using Application.Contracts.Auth.Requests;
 using Application.Contracts.Auth.Responses;
 using Application.Services.Token;
-using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.Auth
 {
     public class SignInService : ISignInService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _configuration;
 
         public SignInService(
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
+            UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager,
             ITokenService tokenService,
             IConfiguration configuration
         )

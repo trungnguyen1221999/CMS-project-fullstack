@@ -5,22 +5,18 @@ using Application.Contracts.Users.Responses;
 using Application.UnitOfWork;
 using AutoMapper;
 using Domain;
-using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
+using AppUser = Domain.Cores.Identity.User;
 
-namespace Application.Services
+namespace Application.Services.User
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(
-            UserManager<User> userManager,
-            IMapper mapper,
-            IUnitOfWork unitOfWork
-        )
+        public UserService(UserManager<AppUser> userManager, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _mapper = mapper;
@@ -33,7 +29,11 @@ namespace Application.Services
             int pageSize
         )
         {
-            var users = await _unitOfWork.Users.GetAllWithRolesAsync(keyWord, currentPage, pageSize);
+            var users = await _unitOfWork.Users.GetAllWithRolesAsync(
+                keyWord,
+                currentPage,
+                pageSize
+            );
             return ReadResponse<PageResult<UserListItemResponse>>.Success(users);
         }
 
@@ -52,7 +52,7 @@ namespace Application.Services
             if (existingUser != null)
                 return WriteResponse.Failure(ErrorMessages.User.UserAlreadyExists);
 
-            var newUser = _mapper.Map<CreateUserRequest, User>(request);
+            var newUser = _mapper.Map<CreateUserRequest, AppUser>(request);
             newUser.UserName = newUser.Email;
             var result = await _userManager.CreateAsync(newUser, request.Password);
             if (!result.Succeeded)

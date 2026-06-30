@@ -1,8 +1,7 @@
 ﻿using Application.Repositories;
-using Application.Services;
+using Application.Services.User;
 using Application.UnitOfWork;
 using AutoMapper;
-using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using Test.Shared.Mocks;

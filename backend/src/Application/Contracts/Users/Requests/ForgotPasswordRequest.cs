@@ -2,9 +2,10 @@
 
 namespace Application.Contracts.Users.Requests
 {
-    public class SetPasswordRequest
+    public class ForgotPasswordRequest
     {
         [Required]
-        public string NewPassword { get; set; } = string.Empty;
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
     }
 }

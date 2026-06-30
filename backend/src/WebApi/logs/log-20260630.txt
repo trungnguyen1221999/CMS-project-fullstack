@@ -30,3 +30,20 @@
 2026-06-30 10:17:19.945 +03:00 [INF] HTTP GET /api/users/ responded 403 in 76.3809 ms
 2026-06-30 10:18:29.694 +03:00 [INF] HTTP POST /api/auth/signin responded 200 in 541.2994 ms
 2026-06-30 10:18:45.059 +03:00 [INF] HTTP GET /api/users/ responded 200 in 1203.3035 ms
+2026-06-30 15:51:43.222 +03:00 [INF] CMS Database Migration & Seeding completed successfully.
+2026-06-30 15:51:43.749 +03:00 [INF] Now listening on: https://localhost:7147
+2026-06-30 15:51:43.752 +03:00 [INF] Now listening on: http://localhost:5133
+2026-06-30 15:51:44.024 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-30 15:51:44.025 +03:00 [INF] Hosting environment: Development
+2026-06-30 15:51:44.027 +03:00 [INF] Content root path: C:\Users\trung.nguyen\Documents\GitHub\CMS-project-fullstack\backend\src\WebApi
+2026-06-30 15:51:52.017 +03:00 [INF] HTTP GET /swagger/index.html responded 304 in 52.5303 ms
+2026-06-30 15:51:52.066 +03:00 [INF] HTTP GET /swagger/index.js responded 304 in 0.3570 ms
+2026-06-30 15:51:52.077 +03:00 [INF] HTTP GET /swagger/swagger-ui.css responded 304 in 17.5874 ms
+2026-06-30 15:51:52.077 +03:00 [INF] HTTP GET /swagger/swagger-ui-standalone-preset.js responded 304 in 9.1800 ms
+2026-06-30 15:51:52.077 +03:00 [INF] HTTP GET /swagger/index.css responded 304 in 16.7736 ms
+2026-06-30 15:51:52.081 +03:00 [INF] HTTP GET /swagger/swagger-ui-bundle.js responded 304 in 19.1614 ms
+2026-06-30 15:51:52.264 +03:00 [INF] HTTP GET /swagger/favicon-32x32.png responded 304 in 0.5046 ms
+2026-06-30 15:51:52.286 +03:00 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 23.3091 ms
+2026-06-30 15:52:00.749 +03:00 [WRN] You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+2026-06-30 15:52:04.294 +03:00 [INF] HTTP POST /api/auth/forgot-password responded 200 in 3752.7864 ms
+2026-06-30 15:52:55.801 +03:00 [INF] HTTP POST /api/auth/reset-password responded 200 in 862.7198 ms

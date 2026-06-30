@@ -2,7 +2,6 @@ using Application.Constants;
 using Application.Contracts.Auth.Requests;
 using Application.Services.Auth;
 using AutoMapper;
-using Domain.Cores.Identity;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using Test.Shared.Mocks;
