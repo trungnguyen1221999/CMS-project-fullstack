@@ -50,7 +50,7 @@ namespace Application.Tests.User.Tests
 
             // Assert
             Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UsersNotFound, result.ErrorCode);
+            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
         }
 
         // ── DeleteAsync: success ──

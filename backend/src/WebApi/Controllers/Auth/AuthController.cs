@@ -9,7 +9,7 @@ namespace WebApi.Controllers.Auth
 {
     [Route("api/auth")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : ApiControllerBase
     {
         private readonly ISignUpService _signUpService;
         private readonly ISignInService _signInService;
@@ -32,11 +32,7 @@ namespace WebApi.Controllers.Auth
         )
         {
             var result = await _signUpService.SignUpAsync(request);
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result);
-            }
-            return Ok(result);
+            return ToActionResult(result);
         }
 
         [HttpPost("signin")]
@@ -45,12 +41,7 @@ namespace WebApi.Controllers.Auth
         )
         {
             var result = await _signInService.SignInAsync(request);
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return ToActionResult(result);
         }
 
         [HttpPost("forgot-password")]
@@ -59,10 +50,7 @@ namespace WebApi.Controllers.Auth
         )
         {
             var result = await _forgotPasswordService.ForgotPasswordAsync(request);
-            if (!result.IsSuccess)
-                return BadRequest(result);
-
-            return Ok(result);
+            return ToActionResult(result);
         }
 
         [HttpPost("reset-password")]
@@ -71,10 +59,7 @@ namespace WebApi.Controllers.Auth
         )
         {
             var result = await _forgotPasswordService.ResetPasswordAsync(request);
-            if (!result.IsSuccess)
-                return BadRequest(result);
-
-            return Ok(result);
+            return ToActionResult(result);
         }
     }
 }

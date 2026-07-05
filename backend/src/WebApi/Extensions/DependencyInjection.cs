@@ -1,6 +1,8 @@
 ﻿using Application.Contracts.Users.Responses;
 using Application.Services.Auth;
 using Application.Services.Otp;
+using Application.Services.Permission;
+using Application.Services.Post;
 using Application.Services.Token;
 using Application.Services.User;
 using Application.UnitOfWork;
@@ -24,6 +26,8 @@ namespace WebApi.Extensions
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
+            builder.Services.AddScoped<IPermissionService, PermissionService>();
+            builder.Services.AddScoped<IPostService, PostService>();
 
             return builder;
         }

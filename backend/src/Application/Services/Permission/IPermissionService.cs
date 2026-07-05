@@ -1,0 +1,8 @@
+﻿namespace Application.Services.Permission
+{
+    public interface IPermissionService
+    {
+        List<string> GetPermissionsByUserId(Guid userId);
+        bool HasApprovedPostPermission(Guid userId);
+    }
+}

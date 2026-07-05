@@ -5,12 +5,12 @@ namespace Application.Constants
         public static class Common
         {
             public const string InvalidRequest = "INVALID_REQUEST";
+            public const string NotFoundSuffix = "NOT_FOUND";
         }
 
         public static class User
         {
             public const string UserNotFound = "USER_NOT_FOUND";
-            public const string UsersNotFound = "USERS_NOT_FOUND";
             public const string UserAlreadyExists = "USER_ALREADY_EXISTS";
             public const string InvalidIds = "INVALID_IDS";
             public const string CreateFailed = "CREATE_FAILED";
@@ -24,6 +24,11 @@ namespace Application.Constants
                 public const string NewPasswordSameAsCurrent =
                     "NEW_PASSWORD_SAME_AS_CURRENT_PASSWORD";
             }
+        }
+
+        public static class Post
+        {
+            public const string InsufficientPostPermission = "INSUFFICIENT_POST_PERMISSION";
         }
 
         public static class Auth

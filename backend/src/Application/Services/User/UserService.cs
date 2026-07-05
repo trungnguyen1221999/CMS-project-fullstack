@@ -82,7 +82,7 @@ namespace Application.Services.User
 
             var affected = await _unitOfWork.Users.DeleteByIdsAsync(ids);
             if (affected == 0)
-                return WriteResponse.Failure(ErrorMessages.User.UsersNotFound);
+                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
 
             return WriteResponse.Success();
         }

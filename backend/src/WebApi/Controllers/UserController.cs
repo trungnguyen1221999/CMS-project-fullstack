@@ -15,7 +15,7 @@ namespace WebApi.Controllers
     [Route("api/users")]
     [ApiController]
     [Authorize]
-    public class UserController : ControllerBase
+    public class UserController : ApiControllerBase
     {
         private readonly IUserService _userService;
 
@@ -119,15 +119,6 @@ namespace WebApi.Controllers
             return ToActionResult(result);
         }
 
-        private ActionResult ToActionResult(WriteResponse result)
-        {
-            if (result.IsSuccess)
-                return Ok(result);
 
-            return IsNotFoundError(result.ErrorCode) ? NotFound(result) : BadRequest(result);
-        }
-
-        private static bool IsNotFoundError(string? errorCode) =>
-            errorCode is ErrorMessages.User.UserNotFound or ErrorMessages.User.UsersNotFound;
     }
 }
