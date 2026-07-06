@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Application.Repositories;
+﻿using Application.Repositories;
 using Domain.Cores.Content;
 
 namespace Infrastructure.Repositories
@@ -11,11 +8,15 @@ namespace Infrastructure.Repositories
         public PostTagsRepository(ApplicationDbContext context)
             : base(context) { }
 
-        public async Task<bool> AddTagToPostAsync(Guid postId, Guid tagId)
+        public void AddTagToPost(Guid postId, Guid tagId)
         {
-            var postTag = new PostTag { PostId = postId, TagId = tagId };
-            await _context.AddAsync(postTag);
-            return true;
+            _context.Add(new PostTag { PostId = postId, TagId = tagId });
+        }
+
+        public void ClearAllTagsFromPost(Guid postId)
+        {
+            var postTags = _context.PostTags.Where(pt => pt.PostId == postId);
+            _context.RemoveRange(postTags);
         }
     }
 }

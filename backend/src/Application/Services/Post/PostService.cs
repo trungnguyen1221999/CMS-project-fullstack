@@ -121,39 +121,80 @@ namespace Application.Services.Post
             _unitOfWork.Posts.Add(post);
 
             //Set tags info
-            if (request.Tags != null && request.Tags.Length > 0)
-            {
-                //looping through the tags and set the tag info
-                foreach (var tagName in request.Tags)
-                {
-                    var tagSlug = TextHelper.GenerateSlug(tagName);
-                    var tag = await _unitOfWork
-                        .Tags.Find(t => t.Slug == tagSlug)
-                        .FirstOrDefaultAsync();
-                    Guid tagId;
-                    if (tag == null)
-                    {
-                        tagId = Guid.NewGuid();
-                        _unitOfWork.Tags.Add(
-                            new Tag()
-                            {
-                                Id = tagId,
-                                Name = tagName,
-                                Slug = tagSlug,
-                            }
-                        );
-                    }
-                    else
-                    {
-                        tagId = tag.Id;
-                    }
-                    await _unitOfWork.PostTags.AddTagToPostAsync(post.Id, tagId);
-                }
-            }
+            await ProcessTagsAsync(post.Id, request.Tags);
+
             var result = await _unitOfWork.CompleteAsync();
             return result > 0
                 ? WriteResponse.Success()
                 : WriteResponse.Failure(ErrorMessages.Post.CreatePostFailed);
+        }
+
+        public async Task<WriteResponse> UpdatePostAsync(
+            CreateUpdatePostRequest request,
+            Guid postId,
+            Guid userId
+        )
+        {
+            //check if post exists
+            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null)
+                return WriteResponse.Failure(ErrorMessages.Post.PostNotFound);
+
+            //check slug uniqueness (exclude current post)
+            var slugExists = await _unitOfWork
+                .Posts.Find(p => p.Slug == request.Slug && p.Id != postId)
+                .AnyAsync();
+            if (slugExists)
+                return WriteResponse.Failure(ErrorMessages.Post.SlugAlreadyExists);
+
+            //mapping request onto tracked entity
+            _mapper.Map(request, post);
+
+            //update category denormalized fields
+            var category = await _unitOfWork
+                .Categories.Find(c => c.Id == request.CategoryId)
+                .FirstOrDefaultAsync();
+            if (category == null)
+                return WriteResponse.Failure(ErrorMessages.Category.CategoryNotFound);
+            post.CategoryName = category.Name;
+            post.CategorySlug = category.Slug;
+
+            //clear old tags then add new
+            _unitOfWork.PostTags.ClearAllTagsFromPost(post.Id);
+            await ProcessTagsAsync(post.Id, request.Tags);
+
+            var result = await _unitOfWork.CompleteAsync();
+            return result > 0
+                ? WriteResponse.Success()
+                : WriteResponse.Failure(ErrorMessages.Post.UpdatePostFailed);
+        }
+
+        private async Task ProcessTagsAsync(Guid postId, string[] tags)
+        {
+            if (tags == null || tags.Length == 0)
+                return;
+
+            foreach (var tagName in tags)
+            {
+                var tagSlug = TextHelper.GenerateSlug(tagName);
+                var tag = await _unitOfWork
+                    .Tags.Find(t => t.Slug == tagSlug)
+                    .FirstOrDefaultAsync();
+
+                var tagId = tag?.Id ?? Guid.NewGuid();
+
+                if (tag == null)
+                {
+                    _unitOfWork.Tags.Add(new Tag
+                    {
+                        Id = tagId,
+                        Name = tagName,
+                        Slug = tagSlug,
+                    });
+                }
+
+                _unitOfWork.PostTags.AddTagToPost(postId, tagId);
+            }
         }
     }
 }

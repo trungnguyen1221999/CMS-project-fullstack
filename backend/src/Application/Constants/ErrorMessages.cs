@@ -28,8 +28,11 @@ namespace Application.Constants
 
         public static class Post
         {
+            public const string PostNotFound = "POST_NOT_FOUND";
             public const string InsufficientPostPermission = "INSUFFICIENT_POST_PERMISSION";
             public const string CreatePostFailed = "CREATE_POST_FAILED";
+            public const string UpdatePostFailed = "UPDATE_POST_FAILED";
+            public const string ClearPostTagsFailed = "CLEAR_POST_TAGS_FAILED";
             public const string SlugAlreadyExists = "SLUG_ALREADY_EXISTS";
         }
 

@@ -27,5 +27,11 @@ namespace Application.Services.Post
         );
 
         Task<WriteResponse> CreatePostAsync(CreateUpdatePostRequest request, Guid userId);
+
+        Task<WriteResponse> UpdatePostAsync(
+            CreateUpdatePostRequest request,
+            Guid postId,
+            Guid userId
+        );
     }
 }

@@ -44,5 +44,17 @@ namespace WebApi.Controllers.AdminApi
             var result = await _postService.CreatePostAsync(request, currentUserId);
             return ToActionResult(result);
         }
+
+        [HttpPut]
+        [HasPermission(Permissions.Posts.Edit)]
+        public async Task<ActionResult<WriteResponse>> EditPost(
+            [FromBody] CreateUpdatePostRequest request,
+            [FromQuery] Guid postId
+        )
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _postService.UpdatePostAsync(request, postId, currentUserId);
+            return ToActionResult(result);
+        }
     }
 }
