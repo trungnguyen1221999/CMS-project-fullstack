@@ -6,6 +6,11 @@ namespace Application.UnitOfWork
     {
         IUserRepository Users { get; }
         IPostRepository Posts { get; }
+
+        ICategoryRepository Categories { get; }
+        ITagRepository Tags { get; }
+
+        IPostTagsRepository PostTags { get; }
         Task<int> CompleteAsync();
     }
 }

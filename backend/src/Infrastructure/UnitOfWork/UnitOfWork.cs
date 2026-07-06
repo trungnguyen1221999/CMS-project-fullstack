@@ -10,6 +10,9 @@ namespace Application.UnitOfWork
         private readonly ApplicationDbContext _context;
         public IUserRepository Users { get; }
         public IPostRepository Posts { get; }
+        public ICategoryRepository Categories { get; }
+        public ITagRepository Tags { get; }
+        public IPostTagsRepository PostTags { get; }
 
         private readonly IMapper _mapper;
 
@@ -19,6 +22,9 @@ namespace Application.UnitOfWork
             _mapper = mapper;
             Users = new UserRepository(context);
             Posts = new PostRepository(context, _mapper);
+            Categories = new CategoryRepository(context);
+            Tags = new TagRepository(context);
+            PostTags = new PostTagsRepository(context);
         }
 
         public async Task<int> CompleteAsync()

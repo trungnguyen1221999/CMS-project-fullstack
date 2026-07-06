@@ -11,5 +11,21 @@ namespace Application.Services.Post
             GetAllPostsRequest request,
             Guid currentUserId
         );
+
+        Task<ReadResponse<PageResult<PostInListResponse>>> GetPostsByCategoryAsync(
+            string categorySlug,
+            PostPagingRequest request
+        );
+
+        Task<ReadResponse<PageResult<PostInListResponse>>> GetPostsByTagAsync(
+            string tagSlug,
+            PostPagingRequest request
+        );
+
+        Task<ReadResponse<PageResult<PostInListResponse>>> GetPublishedPostsAsync(
+            PostPagingRequest request
+        );
+
+        Task<WriteResponse> CreatePostAsync(CreateUpdatePostRequest request, Guid userId);
     }
 }

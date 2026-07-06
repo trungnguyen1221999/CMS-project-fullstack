@@ -5,7 +5,7 @@ using Application.Contracts.Users.Requests;
 using Application.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebApi.Controllers.Auth
+namespace WebApi.Controllers.ClientApi
 {
     [Route("api/auth")]
     [ApiController]

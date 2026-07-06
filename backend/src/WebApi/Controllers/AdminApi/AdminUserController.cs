@@ -10,16 +10,16 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi.Authorization;
 using WebApi.Extensions;
 
-namespace WebApi.Controllers
+namespace WebApi.Controllers.AdminApi
 {
-    [Route("api/users")]
+    [Route("api/admin/users")]
     [ApiController]
     [Authorize]
-    public class UserController : ApiControllerBase
+    public class AdminUserController : ApiControllerBase
     {
         private readonly IUserService _userService;
 
-        public UserController(IUserService userService)
+        public AdminUserController(IUserService userService)
         {
             _userService = userService;
         }
@@ -76,16 +76,6 @@ namespace WebApi.Controllers
             return ToActionResult(result);
         }
 
-        [HttpPut("change-password")]
-        public async Task<ActionResult<WriteResponse>> ChangeMyPassword(
-            [FromBody] ChangeMyPasswordRequest request
-        )
-        {
-            var userId = User.GetUserId();
-            var result = await _userService.ChangeMyPasswordAsync(userId, request);
-            return ToActionResult(result);
-        }
-
         [HttpPut("{id}/set-password")]
         [HasPermission(Permissions.Users.Edit)]
         public async Task<ActionResult<WriteResponse>> SetPassword(
@@ -118,7 +108,5 @@ namespace WebApi.Controllers
             var result = await _userService.AssignRolesToUserAsync(id, roles);
             return ToActionResult(result);
         }
-
-
     }
 }

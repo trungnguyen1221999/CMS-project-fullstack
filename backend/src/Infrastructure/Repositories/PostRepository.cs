@@ -25,20 +25,73 @@ namespace Infrastructure.Repositories
         )
         {
             var query = _context.Posts.AsQueryable();
-            if (!hasApprovePostPermission)
+
+            if (hasApprovePostPermission)
+            {
+                // Editor/Admin: own posts (all statuses) + others' posts (only WaitingForApproval, Published)
+                query = query.Where(q =>
+                    q.AuthorUserId == currentUserId
+                    || q.Status == PostStatus.WaitingForApproval
+                    || q.Status == PostStatus.Published
+                );
+            }
+            else
+            {
+                // Author: own posts only (all statuses)
                 query = query.Where(q => q.AuthorUserId == currentUserId);
+            }
+
             if (!string.IsNullOrEmpty(request.Keyword))
                 query = query.Where(q => q.Name.Contains(request.Keyword));
             if (request.CategoryId.HasValue)
                 query = query.Where(q => q.CategoryId == request.CategoryId.Value);
 
-            //pagination
+            return await ToPagedResultAsync(query, request);
+        }
 
-            var totalCount = query.Count();
+        public async Task<PageResult<PostInListResponse>> GetPostsByCategoryAsync(
+            string categorySlug,
+            PostPagingRequest request
+        )
+        {
+            var query = _context.Posts.Where(q => q.Status == PostStatus.Published);
+            if (!string.IsNullOrEmpty(categorySlug))
+                query = query.Where(q => q.CategorySlug == categorySlug);
+
+            return await ToPagedResultAsync(query, request);
+        }
+
+        public async Task<PageResult<PostInListResponse>> GetPostsByTagAsync(
+            string tagSlug,
+            PostPagingRequest request
+        )
+        {
+            var query = _context.Posts.Where(q => q.Status == PostStatus.Published);
+            if (!string.IsNullOrEmpty(tagSlug))
+                query = query.Where(q => q.Tags != null && q.Tags.Contains(tagSlug));
+
+            return await ToPagedResultAsync(query, request);
+        }
+
+        public async Task<PageResult<PostInListResponse>> GetPublishedPostsAsync(
+            PostPagingRequest request
+        )
+        {
+            var query = _context.Posts.Where(q => q.Status == PostStatus.Published);
+            return await ToPagedResultAsync(query, request);
+        }
+
+        private async Task<PageResult<PostInListResponse>> ToPagedResultAsync(
+            IQueryable<Post> query,
+            PostPagingRequest request
+        )
+        {
+            var totalCount = await query.CountAsync();
             query = query
                 .OrderByDescending(q => q.CreatedAt)
                 .Skip((request.CurrentPage - 1) * request.PageSize)
                 .Take(request.PageSize);
+
             return new PageResult<PostInListResponse>
             {
                 Result = await _mapper.ProjectTo<PostInListResponse>(query).ToListAsync(),

@@ -12,5 +12,17 @@ namespace Application.Repositories
             Guid currentUserId,
             bool hasApprovePostPermission
         );
+
+        Task<PageResult<PostInListResponse>> GetPostsByCategoryAsync(
+            string categorySlug,
+            PostPagingRequest request
+        );
+
+        Task<PageResult<PostInListResponse>> GetPostsByTagAsync(
+            string tagSlug,
+            PostPagingRequest request
+        );
+
+        Task<PageResult<PostInListResponse>> GetPublishedPostsAsync(PostPagingRequest request);
     }
 }

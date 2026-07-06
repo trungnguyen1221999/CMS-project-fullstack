@@ -29,6 +29,13 @@ namespace Application.Constants
         public static class Post
         {
             public const string InsufficientPostPermission = "INSUFFICIENT_POST_PERMISSION";
+            public const string CreatePostFailed = "CREATE_POST_FAILED";
+            public const string SlugAlreadyExists = "SLUG_ALREADY_EXISTS";
+        }
+
+        public static class Category
+        {
+            public const string CategoryNotFound = "CATEGORY_NOT_FOUND";
         }
 
         public static class Auth
