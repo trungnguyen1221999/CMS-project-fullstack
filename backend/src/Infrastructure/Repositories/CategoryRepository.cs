@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Application.Repositories;
+﻿using Application.Repositories;
 using Domain.Cores.Content;
 
 namespace Infrastructure.Repositories

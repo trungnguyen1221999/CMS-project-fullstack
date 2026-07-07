@@ -14,6 +14,8 @@ namespace Application.UnitOfWork
         public ITagRepository Tags { get; }
         public IPostTagsRepository PostTags { get; }
 
+        public IPostActivityLogRepository PostActivityLogs { get; }
+
         public IPostInSeriesRepository PostInSeries { get; }
         private readonly IMapper _mapper;
 
@@ -27,6 +29,7 @@ namespace Application.UnitOfWork
             Tags = new TagRepository(context);
             PostTags = new PostTagsRepository(context);
             PostInSeries = new PostInSeriesRepository(context);
+            PostActivityLogs = new PostActivityLogRepository(context);
         }
 
         public async Task<int> CompleteAsync()

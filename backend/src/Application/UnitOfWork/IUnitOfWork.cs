@@ -13,6 +13,8 @@ namespace Application.UnitOfWork
         IPostTagsRepository PostTags { get; }
 
         IPostInSeriesRepository PostInSeries { get; }
+
+        IPostActivityLogRepository PostActivityLogs { get; }
         Task<int> CompleteAsync();
     }
 }

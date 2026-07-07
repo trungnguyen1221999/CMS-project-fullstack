@@ -43,7 +43,7 @@ namespace Application.Tests.User.Tests
         {
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(request.Email))
-                .ReturnsAsync((AppUser)null);
+                .ReturnsAsync((AppUser?)null);
         }
 
         [Fact]

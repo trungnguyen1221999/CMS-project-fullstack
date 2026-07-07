@@ -38,14 +38,14 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?>().BuildMockQueryable());
+                .Returns(new List<AppPost>().BuildMockQueryable());
 
-            // Act
-            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            // Act
+                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
 
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+                            // Assert
+                            Assert.False(result.IsSuccess);
+                            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
         }
 
         [Fact]
@@ -58,11 +58,11 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?> { post }.BuildMockQueryable());
+                .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync((AppUser)null);
+                            _mockUserManager
+                                .Setup(x => x.FindByIdAsync(userId.ToString()))
+                                .ReturnsAsync((AppUser?)null);
 
             // Act
             var result = await _postService.AdminGetPostByIdAsync(postId, userId);
@@ -83,18 +83,16 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?> { post }.BuildMockQueryable());
+                .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-            // Act
-            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            // Act
+                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(postId, result.Data!.Id);
+                            // Assert
+                            Assert.True(result.IsSuccess);
+                            Assert.Equal(postId, result.Data!.Id);
         }
 
         [Fact]
@@ -109,18 +107,16 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?> { post }.BuildMockQueryable());
+                .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-            // Act
-            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            // Act
+                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
 
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+                            // Assert
+                            Assert.False(result.IsSuccess);
+                            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
         }
 
         [Fact]
@@ -135,22 +131,18 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?> { post }.BuildMockQueryable());
+                .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-            _mockPermissionService
-                .Setup(x => x.HasApprovedPostPermission(userId))
-                .Returns(true);
+                            _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(true);
 
-            // Act
-            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            // Act
+                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(postId, result.Data!.Id);
+                            // Assert
+                            Assert.True(result.IsSuccess);
+                            Assert.Equal(postId, result.Data!.Id);
         }
 
         [Fact]
@@ -165,15 +157,11 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?> { post }.BuildMockQueryable());
+                .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-            _mockPermissionService
-                .Setup(x => x.HasApprovedPostPermission(userId))
-                .Returns(false);
+                            _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(false);
 
             // Act
             var result = await _postService.AdminGetPostByIdAsync(postId, userId);

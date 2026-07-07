@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Application.Constants;
-using Application.Contracts.Posts.Request;
 using Domain.Cores.Content;
 using Moq;
 using Test.Shared.Helpers;
@@ -20,7 +19,7 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?>().BuildMockQueryable());
+                .Returns(new List<AppPost>().BuildMockQueryable());
 
             // Act
             var result = await _postService.AdminUpdatePostAsync(request, postId, userId);
@@ -47,8 +46,8 @@ namespace Application.Tests.Post.Tests
                 {
                     callCount++;
                     if (callCount == 1)
-                        return new List<AppPost?> { existingPost }.BuildMockQueryable();
-                    return new List<AppPost?> { otherPost }.BuildMockQueryable();
+                        return new List<AppPost> { existingPost }.BuildMockQueryable();
+                    return new List<AppPost> { otherPost }.BuildMockQueryable();
                 });
 
             // Act
@@ -75,17 +74,15 @@ namespace Application.Tests.Post.Tests
                 {
                     callCount++;
                     if (callCount == 1)
-                        return new List<AppPost?> { existingPost }.BuildMockQueryable();
-                    return new List<AppPost?>().BuildMockQueryable();
+                        return new List<AppPost> { existingPost }.BuildMockQueryable();
+                    return new List<AppPost>().BuildMockQueryable();
                 });
 
             _mockMapper.Setup(x => x.Map(request, existingPost));
 
             _mockUnitOfWork
-                .Setup(x =>
-                    x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>())
-                )
-                .Returns(new List<PostCategory?>().BuildMockQueryable());
+                .Setup(x => x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>()))
+                .Returns(new List<PostCategory>().BuildMockQueryable());
 
             // Act
             var result = await _postService.AdminUpdatePostAsync(request, postId, userId);
@@ -117,23 +114,21 @@ namespace Application.Tests.Post.Tests
                 {
                     callCount++;
                     if (callCount == 1)
-                        return new List<AppPost?> { existingPost }.BuildMockQueryable();
-                    return new List<AppPost?>().BuildMockQueryable();
+                        return new List<AppPost> { existingPost }.BuildMockQueryable();
+                    return new List<AppPost>().BuildMockQueryable();
                 });
 
             _mockMapper.Setup(x => x.Map(request, existingPost));
 
             _mockUnitOfWork
-                .Setup(x =>
-                    x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>())
-                )
-                .Returns(new List<PostCategory?> { category }.BuildMockQueryable());
+                .Setup(x => x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>()))
+                .Returns(new List<PostCategory> { category }.BuildMockQueryable());
 
             _mockUnitOfWork.Setup(x => x.PostTags.ClearAllTagsFromPost(postId));
 
             _mockUnitOfWork
                 .Setup(x => x.Tags.Find(It.IsAny<Expression<Func<Tag, bool>>>()))
-                .Returns(new List<Tag?>().BuildMockQueryable());
+                .Returns(new List<Tag>().BuildMockQueryable());
 
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(1);
 
@@ -168,23 +163,21 @@ namespace Application.Tests.Post.Tests
                 {
                     callCount++;
                     if (callCount == 1)
-                        return new List<AppPost?> { existingPost }.BuildMockQueryable();
-                    return new List<AppPost?>().BuildMockQueryable();
+                        return new List<AppPost> { existingPost }.BuildMockQueryable();
+                    return new List<AppPost>().BuildMockQueryable();
                 });
 
             _mockMapper.Setup(x => x.Map(request, existingPost));
 
             _mockUnitOfWork
-                .Setup(x =>
-                    x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>())
-                )
-                .Returns(new List<PostCategory?> { category }.BuildMockQueryable());
+                .Setup(x => x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>()))
+                .Returns(new List<PostCategory> { category }.BuildMockQueryable());
 
             _mockUnitOfWork.Setup(x => x.PostTags.ClearAllTagsFromPost(It.IsAny<Guid>()));
 
             _mockUnitOfWork
                 .Setup(x => x.Tags.Find(It.IsAny<Expression<Func<Tag, bool>>>()))
-                .Returns(new List<Tag?>().BuildMockQueryable());
+                .Returns(new List<Tag>().BuildMockQueryable());
 
             _mockUnitOfWork.Setup(x => x.PostTags.AddTagToPost(It.IsAny<Guid>(), It.IsAny<Guid>()));
             _mockUnitOfWork.Setup(x => x.Tags.Add(It.IsAny<Tag>()));

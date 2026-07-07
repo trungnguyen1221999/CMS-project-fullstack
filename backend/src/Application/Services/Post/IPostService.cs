@@ -42,5 +42,10 @@ namespace Application.Services.Post
         );
 
         Task<WriteResponse> AdminDeletePostAsync(Guid[] ids, Guid userId);
+
+        Task<WriteResponse> AdminApprovePostAsync(Guid postId, Guid userId, string? note);
+        Task<WriteResponse> AdminRejectPostAsync(Guid postId, Guid userId, string? note);
+
+        Task<WriteResponse> AdminSubmitPostForApprovalAsync(Guid postId, Guid userId, string? note);
     }
 }

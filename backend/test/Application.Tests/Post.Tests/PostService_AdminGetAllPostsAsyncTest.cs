@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Application.Constants;
+﻿using Application.Constants;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Domain;
 using Domain.Cores.Content;
-using Domain.Cores.Identity;
 using Moq;
 using AppUser = Domain.Cores.Identity.User;
 
@@ -59,7 +55,7 @@ namespace Application.Tests.Post.Tests
             var userId = Guid.NewGuid();
             _mockUserManager
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync((AppUser)null);
+                .ReturnsAsync((AppUser?)null);
             // Act
 
             var result = await _postService.AdminGetAllPostsAsync(request, userId);

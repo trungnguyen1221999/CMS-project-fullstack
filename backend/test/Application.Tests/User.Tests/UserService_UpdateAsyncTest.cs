@@ -28,7 +28,7 @@ namespace Application.Tests.User.Tests
             var userId = Guid.NewGuid();
             _userManagerMock
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync((AppUser)null);
+                .ReturnsAsync((AppUser?)null);
             // Act
             var result = await _userService.UpdateAsync(userId, request);
             // Assert

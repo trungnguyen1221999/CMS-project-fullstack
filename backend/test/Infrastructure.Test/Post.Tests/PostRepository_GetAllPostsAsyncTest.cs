@@ -5,7 +5,6 @@ using Domain.Cores.Content;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Test.Post.Tests
 {
@@ -48,7 +47,6 @@ namespace Infrastructure.Test.Post.Tests
                 CreatePost(_authorId, PostStatus.WaitingForApproval, "My Pending Post"),
                 CreatePost(_authorId, PostStatus.Published, "My Published Post"),
                 CreatePost(_authorId, PostStatus.Rejected, "My Rejected Post"),
-
                 // Other author's posts (all statuses)
                 CreatePost(_otherAuthorId, PostStatus.Draft, "Other Draft 1"),
                 CreatePost(_otherAuthorId, PostStatus.Draft, "Other Draft 2"),
@@ -98,7 +96,11 @@ namespace Infrastructure.Test.Post.Tests
             Assert.Equal(4, result.TotalCount);
             Assert.All(
                 result.Result,
-                p => Assert.Equal(_authorId, _context.Posts.First(x => x.Name == p.Name).AuthorUserId)
+                p =>
+                    Assert.Equal(
+                        _authorId,
+                        _context.Posts.First(x => x.Name == p.Name).AuthorUserId
+                    )
             );
         }
 

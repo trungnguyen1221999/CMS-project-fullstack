@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Application.Services.Permission;
+﻿using Application.Services.Permission;
 using Application.Services.Post;
 using Application.UnitOfWork;
 using AutoMapper;

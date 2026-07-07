@@ -77,5 +77,44 @@ namespace WebApi.Controllers.AdminApi
             var result = await _postService.AdminDeletePostAsync(ids, currentUserId);
             return ToActionResult(result);
         }
+
+        [HttpPut("approve/{postId}")]
+        [HasPermission(Permissions.Posts.Approve)]
+        public async Task<ActionResult<WriteResponse>> ApprovePost(
+            [FromRoute] Guid postId,
+            [FromBody] string? note
+        )
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _postService.AdminApprovePostAsync(postId, currentUserId, note);
+            return ToActionResult(result);
+        }
+
+        [HttpPut("reject/{postId}")]
+        [HasPermission(Permissions.Posts.Approve)]
+        public async Task<ActionResult<WriteResponse>> RejectPost(
+            [FromRoute] Guid postId,
+            [FromBody] string? note
+        )
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _postService.AdminRejectPostAsync(postId, currentUserId, note);
+            return ToActionResult(result);
+        }
+
+        [HttpPut("approval-submit/{postId}")]
+        public async Task<ActionResult<WriteResponse>> SubmitPostForApproval(
+            [FromRoute] Guid postId,
+            [FromBody] string? note
+        )
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _postService.AdminSubmitPostForApprovalAsync(
+                postId,
+                currentUserId,
+                note
+            );
+            return ToActionResult(result);
+        }
     }
 }

@@ -22,9 +22,7 @@ namespace Test.Shared.Helpers
         IQueryProvider IQueryable.Provider => Provider;
         public IQueryProvider Provider { get; }
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(
-            CancellationToken cancellationToken = default
-        )
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
             return new TestAsyncEnumerator<T>(this.AsEnumerable().GetEnumerator());
         }
@@ -40,9 +38,7 @@ namespace Test.Shared.Helpers
             new TestAsyncEnumerable<T>(_inner.CreateQuery<T>(expression));
 
         public IQueryable<TElement> CreateQuery<TElement>(Expression expression) =>
-            new TestAsyncEnumerable<TElement>(
-                _inner.CreateQuery<TElement>(expression)
-            );
+            new TestAsyncEnumerable<TElement>(_inner.CreateQuery<TElement>(expression));
 
         public object? Execute(Expression expression) => _inner.Execute(expression);
 
@@ -60,9 +56,11 @@ namespace Test.Shared.Helpers
                 .MakeGenericMethod(resultType!);
 
             var result = executeMethod.Invoke(_inner, [expression]);
-            return (TResult)typeof(Task).GetMethod(nameof(Task.FromResult))!
-                .MakeGenericMethod(resultType!)
-                .Invoke(null, [result])!;
+            return (TResult)
+                typeof(Task)
+                    .GetMethod(nameof(Task.FromResult))!
+                    .MakeGenericMethod(resultType!)
+                    .Invoke(null, [result])!;
         }
     }
 

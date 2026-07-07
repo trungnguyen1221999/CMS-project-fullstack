@@ -8,7 +8,6 @@ using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authorization;
-using WebApi.Extensions;
 
 namespace WebApi.Controllers.AdminApi
 {

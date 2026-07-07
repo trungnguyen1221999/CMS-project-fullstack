@@ -5,6 +5,7 @@ using AutoMapper;
 using Domain;
 using Domain.Cores.Content;
 using Microsoft.EntityFrameworkCore;
+using AppUser = Domain.Cores.Identity.User;
 
 namespace Infrastructure.Repositories
 {
@@ -80,6 +81,57 @@ namespace Infrastructure.Repositories
         {
             var query = _context.Posts.Where(q => q.Status == PostStatus.Published);
             return await ToPagedResultAsync(query, request);
+        }
+
+        public async Task<bool> Approve(Guid postId, Guid userId, string? note) =>
+            await ChangePostStatusAsync(postId, userId, PostStatus.Published, note);
+
+        public async Task<bool> Reject(Guid postId, Guid userId, string? note) =>
+            await ChangePostStatusAsync(postId, userId, PostStatus.Rejected, note);
+
+        public async Task<bool> SubmitForApproval(Guid postId, Guid userId, string? note) =>
+            await ChangePostStatusAsync(postId, userId, PostStatus.WaitingForApproval, note);
+
+        private async Task<bool> ChangePostStatusAsync(
+            Guid postId,
+            Guid userId,
+            PostStatus newStatus,
+            string? note
+        )
+        {
+            var post = await FindPostByIdAsync(postId);
+            if (post == null)
+                return false;
+            var user = await FindUserByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            _context.PostActivityLogs.Add(
+                new PostActivityLog
+                {
+                    FromStatus = post.Status,
+                    ToStatus = newStatus,
+                    UserName = user.UserName,
+                    PostId = postId,
+                    UserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    Note = note,
+                }
+            );
+            post.Status = newStatus;
+
+            _context.Posts.Update(post);
+            return true;
+        }
+
+        private async Task<Post?> FindPostByIdAsync(Guid postId)
+        {
+            return await _context.Posts.FindAsync(postId);
+        }
+
+        private async Task<AppUser?> FindUserByIdAsync(Guid userId)
+        {
+            return await _context.Users.FindAsync(userId);
         }
 
         private async Task<PageResult<PostInListResponse>> ToPagedResultAsync(

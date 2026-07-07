@@ -24,5 +24,10 @@ namespace Application.Repositories
         );
 
         Task<PageResult<PostInListResponse>> GetPublishedPostsAsync(PostPagingRequest request);
+
+        Task<bool> Approve(Guid postId, Guid userId, string? note);
+        Task<bool> Reject(Guid postId, Guid userId, string? note);
+
+        Task<bool> SubmitForApproval(Guid postId, Guid userId, string? note);
     }
 }

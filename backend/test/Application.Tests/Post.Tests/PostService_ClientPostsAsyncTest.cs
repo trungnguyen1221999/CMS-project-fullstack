@@ -46,7 +46,7 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?>().BuildMockQueryable());
+                .Returns(new List<AppPost>().BuildMockQueryable());
 
             // Act
             var result = await _postService.ClientGetPostByIdAsync(postId);
@@ -65,7 +65,7 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?> { post }.BuildMockQueryable());
+                .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
             // Act
             var result = await _postService.ClientGetPostByIdAsync(postId);
@@ -85,11 +85,9 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
-                .Returns(new List<AppPost?> { post }.BuildMockQueryable());
+                .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockMapper
-                .Setup(x => x.Map<AppPost, PostResponse>(post))
-                .Returns(postResponse);
+            _mockMapper.Setup(x => x.Map<AppPost, PostResponse>(post)).Returns(postResponse);
 
             // Act
             var result = await _postService.ClientGetPostByIdAsync(postId);
@@ -157,10 +155,7 @@ namespace Application.Tests.Post.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.Equal(1, result.Data!.TotalCount);
-            _mockUnitOfWork.Verify(
-                x => x.Posts.GetPostsByTagAsync(tagSlug, request),
-                Times.Once
-            );
+            _mockUnitOfWork.Verify(x => x.Posts.GetPostsByTagAsync(tagSlug, request), Times.Once);
         }
     }
 }

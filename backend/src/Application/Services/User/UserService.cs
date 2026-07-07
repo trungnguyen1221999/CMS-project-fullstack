@@ -63,9 +63,8 @@ namespace Application.Services.User
 
         public async Task<WriteResponse> UpdateAsync(Guid id, UpdateUserRequest request)
         {
-            var existingUser = await _userManager.FindByIdAsync(id.ToString());
-            if (existingUser == null)
-                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
+            var (existingUser, userError) = await GetUserAndValidateAsync(id);
+            if (userError != null) return userError;
 
             _mapper.Map(request, existingUser);
             var result = await _userManager.UpdateAsync(existingUser);
@@ -92,9 +91,8 @@ namespace Application.Services.User
             ChangeMyPasswordRequest request
         )
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user == null)
-                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
+            var (user, userError) = await GetUserAndValidateAsync(id);
+            if (userError != null) return userError;
 
             var sameAsCurrent = await _userManager.CheckPasswordAsync(user, request.NewPassword);
             if (sameAsCurrent)
@@ -121,9 +119,8 @@ namespace Application.Services.User
 
         public async Task<WriteResponse> SetPasswordAsync(Guid id, SetPasswordRequest request)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user == null)
-                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
+            var (user, userError) = await GetUserAndValidateAsync(id);
+            if (userError != null) return userError;
 
             var sameAsCurrent = await _userManager.CheckPasswordAsync(user, request.NewPassword);
             if (sameAsCurrent)
@@ -144,9 +141,8 @@ namespace Application.Services.User
 
         public async Task<WriteResponse> ChangeEmailAsync(Guid id, ChangeEmailRequest request)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user == null)
-                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
+            var (user, userError) = await GetUserAndValidateAsync(id);
+            if (userError != null) return userError;
             var token = await _userManager.GenerateChangeEmailTokenAsync(user, request.Email);
             var result = await _userManager.ChangeEmailAsync(user, request.Email, token);
             if (!result.Succeeded)
@@ -159,9 +155,8 @@ namespace Application.Services.User
 
         public async Task<WriteResponse> AssignRolesToUserAsync(Guid id, string[] roles)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user == null)
-                return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
+            var (user, userError) = await GetUserAndValidateAsync(id);
+            if (userError != null) return userError;
 
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _unitOfWork.Users.RemoveUserFromRoles(id, currentRoles);
@@ -173,6 +168,16 @@ namespace Application.Services.User
                     FormatErrors(addRoles)
                 );
             return WriteResponse.Success();
+        }
+
+        private async Task<(AppUser User, WriteResponse? Error)> GetUserAndValidateAsync(
+            Guid userId
+        )
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            return user == null
+                ? (null!, WriteResponse.Failure(ErrorMessages.User.UserNotFound))
+                : (user, null);
         }
 
         private static string FormatErrors(IdentityResult result) =>

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Domain.Cores.Content;
+﻿using Domain.Cores.Content;
 
 namespace Application.Repositories
 {

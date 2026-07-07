@@ -10,8 +10,8 @@ namespace Application.Repositories
         Task<IEnumerable<T>> GetAllAsync();
 
         //Build Sql query
-        IQueryable<T?> Find(Expression<Func<T, bool>> expression);
-        IEnumerable<T?> FindList(Expression<Func<T, bool>> expression);
+        IQueryable<T> Find(Expression<Func<T, bool>> expression);
+        IEnumerable<T> FindList(Expression<Func<T, bool>> expression);
 
         //Write
 
