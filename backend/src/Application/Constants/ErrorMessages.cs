@@ -34,6 +34,7 @@ namespace Application.Constants
             public const string UpdatePostFailed = "UPDATE_POST_FAILED";
             public const string ClearPostTagsFailed = "CLEAR_POST_TAGS_FAILED";
             public const string SlugAlreadyExists = "SLUG_ALREADY_EXISTS";
+            public const string DeleteFailed = "DELETE_POST_FAILED";
         }
 
         public static class Category

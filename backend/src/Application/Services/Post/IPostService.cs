@@ -41,6 +41,6 @@ namespace Application.Services.Post
             PostPagingRequest request
         );
 
-        Task<WriteResponse> AdminDeletePostAsync(Guid postId, Guid userId);
+        Task<WriteResponse> AdminDeletePostAsync(Guid[] ids, Guid userId);
     }
 }

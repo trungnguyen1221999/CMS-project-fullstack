@@ -10,6 +10,7 @@ using Domain;
 using Domain.Cores.Content;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static Application.Constants.ErrorMessages;
 using AppPost = Domain.Cores.Content.Post;
 using AppUser = Domain.Cores.Identity.User;
 
@@ -208,32 +209,31 @@ namespace Application.Services.Post
             return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
         }
 
-        public async Task<WriteResponse> AdminDeletePostAsync(Guid postId, Guid currentUserId)
+        public async Task<WriteResponse> AdminDeletePostAsync(Guid[] ids, Guid currentUserId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null)
-                return WriteResponse.Failure(ErrorMessages.Post.PostNotFound);
-
             var user = await _userManager.FindByIdAsync(currentUserId.ToString());
             if (user == null)
                 return WriteResponse.Failure(ErrorMessages.User.UserNotFound);
             var hasDeletePostPermission = _permissionService.HasDeletePostPermission(user.Id);
-            if (post.AuthorUserId != currentUserId && !hasDeletePostPermission)
-                return WriteResponse.Failure(ErrorMessages.Post.InsufficientPostPermission);
-            _unitOfWork.Posts.Remove(post);
-            _unitOfWork.PostTags.ClearAllTagsFromPost(post.Id);
+            var posts = await _unitOfWork.Posts.Find(p => ids.Contains(p.Id)).ToListAsync();
+            if (posts.Count == 0 || posts.Count != ids.Length)
+                return WriteResponse.Failure(ErrorMessages.Post.PostNotFound);
 
-            var series = await _unitOfWork
-                .PostInSeries.Find(ps => ps.PostId == postId)
-                .FirstOrDefaultAsync();
-            if (series != null)
+            if (!hasDeletePostPermission && posts.Any(p => p.AuthorUserId != currentUserId))
             {
-                _unitOfWork.PostInSeries.RemovePostFromSeries(postId, series.SeriesId);
+                return WriteResponse.Failure(ErrorMessages.Post.InsufficientPostPermission);
+            }
+
+            _unitOfWork.Posts.RemoveRange(posts);
+            foreach (var post in posts)
+            {
+                _unitOfWork.PostTags.ClearAllTagsFromPost(post.Id);
+                _unitOfWork.PostInSeries.ClearPostFromAllSeries(post.Id);
             }
             var result = await _unitOfWork.CompleteAsync();
             return result > 0
                 ? WriteResponse.Success()
-                : WriteResponse.Failure(ErrorMessages.Post.PostNotFound);
+                : WriteResponse.Failure(ErrorMessages.Post.DeleteFailed);
         }
 
         private async Task ProcessTagsAsync(Guid postId, string[] tags)

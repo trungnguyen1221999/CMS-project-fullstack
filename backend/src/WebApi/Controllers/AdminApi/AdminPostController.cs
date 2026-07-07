@@ -69,12 +69,12 @@ namespace WebApi.Controllers.AdminApi
             return ToActionResult(result);
         }
 
-        [HttpDelete("{postId}")]
+        [HttpDelete]
         [HasPermission(Permissions.Posts.Delete)]
-        public async Task<ActionResult<WriteResponse>> DeletePost([FromRoute] Guid postId)
+        public async Task<ActionResult<WriteResponse>> DeletePost([FromQuery] Guid[] ids)
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminDeletePostAsync(postId, currentUserId);
+            var result = await _postService.AdminDeletePostAsync(ids, currentUserId);
             return ToActionResult(result);
         }
     }

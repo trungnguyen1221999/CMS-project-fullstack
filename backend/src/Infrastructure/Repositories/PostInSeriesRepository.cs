@@ -13,6 +13,15 @@ namespace Infrastructure.Repositories
         public PostInSeriesRepository(ApplicationDbContext context)
             : base(context) { }
 
+        public bool ClearPostFromAllSeries(Guid postId)
+        {
+            var postInSeries = _context.PostInSeries.Where(ps => ps.PostId == postId).ToList();
+            if (!postInSeries.Any())
+                return false;
+            _context.PostInSeries.RemoveRange(postInSeries);
+            return true;
+        }
+
         public bool RemovePostFromSeries(Guid postId, Guid seriesId)
         {
             var postInSeries = _context.PostInSeries.Find(postId, seriesId);
