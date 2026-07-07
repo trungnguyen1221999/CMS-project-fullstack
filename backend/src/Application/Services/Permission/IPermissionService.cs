@@ -4,5 +4,6 @@
     {
         List<string> GetPermissionsByUserId(Guid userId);
         bool HasApprovedPostPermission(Guid userId);
+        bool HasDeletePostPermission(Guid userId);
     }
 }

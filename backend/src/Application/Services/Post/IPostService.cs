@@ -40,5 +40,7 @@ namespace Application.Services.Post
             string tagSlug,
             PostPagingRequest request
         );
+
+        Task<WriteResponse> AdminDeletePostAsync(Guid postId, Guid userId);
     }
 }

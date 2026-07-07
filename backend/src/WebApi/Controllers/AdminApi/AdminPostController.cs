@@ -57,15 +57,24 @@ namespace WebApi.Controllers.AdminApi
             return ToActionResult(result);
         }
 
-        [HttpPut]
+        [HttpPut("{postId}")]
         [HasPermission(Permissions.Posts.Edit)]
         public async Task<ActionResult<WriteResponse>> EditPost(
             [FromBody] CreateUpdatePostRequest request,
-            [FromQuery] Guid postId
+            [FromRoute] Guid postId
         )
         {
             var currentUserId = User.GetUserId();
             var result = await _postService.AdminUpdatePostAsync(request, postId, currentUserId);
+            return ToActionResult(result);
+        }
+
+        [HttpDelete("{postId}")]
+        [HasPermission(Permissions.Posts.Delete)]
+        public async Task<ActionResult<WriteResponse>> DeletePost([FromRoute] Guid postId)
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _postService.AdminDeletePostAsync(postId, currentUserId);
             return ToActionResult(result);
         }
     }

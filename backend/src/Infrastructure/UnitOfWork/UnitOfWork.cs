@@ -14,6 +14,7 @@ namespace Application.UnitOfWork
         public ITagRepository Tags { get; }
         public IPostTagsRepository PostTags { get; }
 
+        public IPostInSeriesRepository PostInSeries { get; }
         private readonly IMapper _mapper;
 
         public UnitOfWork(ApplicationDbContext context, IMapper mapper)
@@ -25,6 +26,7 @@ namespace Application.UnitOfWork
             Categories = new CategoryRepository(context);
             Tags = new TagRepository(context);
             PostTags = new PostTagsRepository(context);
+            PostInSeries = new PostInSeriesRepository(context);
         }
 
         public async Task<int> CompleteAsync()

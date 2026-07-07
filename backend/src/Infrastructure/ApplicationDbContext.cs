@@ -19,6 +19,8 @@ namespace Infrastructure
         public DbSet<Serie> Series { get; set; }
         public DbSet<Tag> Tags { get; set; }
 
+        public DbSet<PostInSeries> PostInSeries { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

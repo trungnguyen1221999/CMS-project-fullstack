@@ -11,6 +11,8 @@ namespace Application.UnitOfWork
         ITagRepository Tags { get; }
 
         IPostTagsRepository PostTags { get; }
+
+        IPostInSeriesRepository PostInSeries { get; }
         Task<int> CompleteAsync();
     }
 }

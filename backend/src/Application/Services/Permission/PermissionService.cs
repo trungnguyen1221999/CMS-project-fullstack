@@ -27,5 +27,11 @@ namespace Application.Services.Permission
             var permissions = GetPermissionsByUserId(userId);
             return permissions.Contains(Permissions.Posts.Approve);
         }
+
+        public bool HasDeletePostPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.Posts.Delete);
+        }
     }
 }
