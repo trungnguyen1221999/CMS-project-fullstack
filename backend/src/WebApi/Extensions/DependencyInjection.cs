@@ -27,7 +27,8 @@ namespace WebApi.Extensions
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
             builder.Services.AddScoped<IPermissionService, PermissionService>();
-            builder.Services.AddScoped<IPostService, PostService>();
+            builder.Services.AddScoped<IAdminPostService, AdminPostService>();
+            builder.Services.AddScoped<IClientPostService, ClientPostService>();
 
             return builder;
         }

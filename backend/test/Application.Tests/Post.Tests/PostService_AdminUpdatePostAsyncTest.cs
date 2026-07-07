@@ -22,7 +22,7 @@ namespace Application.Tests.Post.Tests
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
             // Act
-            var result = await _postService.AdminUpdatePostAsync(request, postId, userId);
+            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -51,7 +51,7 @@ namespace Application.Tests.Post.Tests
                 });
 
             // Act
-            var result = await _postService.AdminUpdatePostAsync(request, postId, userId);
+            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -85,7 +85,7 @@ namespace Application.Tests.Post.Tests
                 .Returns(new List<PostCategory>().BuildMockQueryable());
 
             // Act
-            var result = await _postService.AdminUpdatePostAsync(request, postId, userId);
+            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -133,7 +133,7 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(1);
 
             // Act
-            var result = await _postService.AdminUpdatePostAsync(request, postId, userId);
+            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -184,7 +184,7 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
             // Act
-            var result = await _postService.AdminUpdatePostAsync(request, postId, userId);
+            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
 
             // Assert
             Assert.False(result.IsSuccess);

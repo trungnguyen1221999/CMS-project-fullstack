@@ -83,37 +83,30 @@ namespace Infrastructure.Repositories
             return await ToPagedResultAsync(query, request);
         }
 
-        public async Task<bool> Approve(Guid postId, Guid userId, string? note) =>
-            await ChangePostStatusAsync(postId, userId, PostStatus.Published, note);
+        public Task<bool> Approve(Post post, AppUser user, string? note) =>
+            ChangePostStatusAsync(post, user, PostStatus.Published, note);
 
-        public async Task<bool> Reject(Guid postId, Guid userId, string? note) =>
-            await ChangePostStatusAsync(postId, userId, PostStatus.Rejected, note);
+        public Task<bool> Reject(Post post, AppUser user, string? note) =>
+            ChangePostStatusAsync(post, user, PostStatus.Rejected, note);
 
-        public async Task<bool> SubmitForApproval(Guid postId, Guid userId, string? note) =>
-            await ChangePostStatusAsync(postId, userId, PostStatus.WaitingForApproval, note);
+        public Task<bool> SubmitForApproval(Post post, AppUser user, string? note) =>
+            ChangePostStatusAsync(post, user, PostStatus.WaitingForApproval, note);
 
-        private async Task<bool> ChangePostStatusAsync(
-            Guid postId,
-            Guid userId,
+        private Task<bool> ChangePostStatusAsync(
+            Post post,
+            AppUser user,
             PostStatus newStatus,
             string? note
         )
         {
-            var post = await FindPostByIdAsync(postId);
-            if (post == null)
-                return false;
-            var user = await FindUserByIdAsync(userId);
-            if (user == null)
-                return false;
-
             _context.PostActivityLogs.Add(
                 new PostActivityLog
                 {
                     FromStatus = post.Status,
                     ToStatus = newStatus,
                     UserName = user.UserName,
-                    PostId = postId,
-                    UserId = userId,
+                    PostId = post.Id,
+                    UserId = user.Id,
                     CreatedAt = DateTime.UtcNow,
                     Note = note,
                 }
@@ -121,17 +114,7 @@ namespace Infrastructure.Repositories
             post.Status = newStatus;
 
             _context.Posts.Update(post);
-            return true;
-        }
-
-        private async Task<Post?> FindPostByIdAsync(Guid postId)
-        {
-            return await _context.Posts.FindAsync(postId);
-        }
-
-        private async Task<AppUser?> FindUserByIdAsync(Guid userId)
-        {
-            return await _context.Users.FindAsync(userId);
+            return Task.FromResult(true);
         }
 
         private async Task<PageResult<PostInListResponse>> ToPagedResultAsync(

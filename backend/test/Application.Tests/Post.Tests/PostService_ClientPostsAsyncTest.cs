@@ -30,7 +30,7 @@ namespace Application.Tests.Post.Tests
                 .ReturnsAsync(fakePageResult);
 
             // Act
-            var result = await _postService.ClientGetAllPostsAsync(request);
+            var result = await _clientPostService.GetAllPostsAsync(request);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -49,7 +49,7 @@ namespace Application.Tests.Post.Tests
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
             // Act
-            var result = await _postService.ClientGetPostByIdAsync(postId);
+            var result = await _clientPostService.GetPostByIdAsync(postId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -68,7 +68,7 @@ namespace Application.Tests.Post.Tests
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
             // Act
-            var result = await _postService.ClientGetPostByIdAsync(postId);
+            var result = await _clientPostService.GetPostByIdAsync(postId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -90,7 +90,7 @@ namespace Application.Tests.Post.Tests
             _mockMapper.Setup(x => x.Map<AppPost, PostResponse>(post)).Returns(postResponse);
 
             // Act
-            var result = await _postService.ClientGetPostByIdAsync(postId);
+            var result = await _clientPostService.GetPostByIdAsync(postId);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -120,7 +120,7 @@ namespace Application.Tests.Post.Tests
                 .ReturnsAsync(fakePageResult);
 
             // Act
-            var result = await _postService.ClientGetPostsByCategoryAsync(categorySlug, request);
+            var result = await _clientPostService.GetPostsByCategoryAsync(categorySlug, request);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -150,7 +150,7 @@ namespace Application.Tests.Post.Tests
                 .ReturnsAsync(fakePageResult);
 
             // Act
-            var result = await _postService.ClientGetPostsByTagAsync(tagSlug, request);
+            var result = await _clientPostService.GetPostsByTagAsync(tagSlug, request);
 
             // Assert
             Assert.True(result.IsSuccess);

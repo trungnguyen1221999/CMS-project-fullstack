@@ -11,9 +11,9 @@ namespace WebApi.Controllers.ClientApi
     [ApiController]
     public class PostController : ApiControllerBase
     {
-        private readonly IPostService _postService;
+        private readonly IClientPostService _postService;
 
-        public PostController(IPostService postService)
+        public PostController(IClientPostService postService)
         {
             _postService = postService;
         }
@@ -23,7 +23,7 @@ namespace WebApi.Controllers.ClientApi
             ActionResult<ReadResponse<PageResult<PostInListResponse>>>
         > GetPublishedPosts([FromQuery] PostPagingRequest request)
         {
-            var result = await _postService.ClientGetAllPostsAsync(request);
+            var result = await _postService.GetAllPostsAsync(request);
             return ToActionResult(result);
         }
 
@@ -32,7 +32,7 @@ namespace WebApi.Controllers.ClientApi
             ActionResult<ReadResponse<PageResult<PostInListResponse>>>
         > GetPostsByCategory([FromRoute] string categorySlug, [FromQuery] PostPagingRequest request)
         {
-            var result = await _postService.ClientGetPostsByCategoryAsync(categorySlug, request);
+            var result = await _postService.GetPostsByCategoryAsync(categorySlug, request);
             return ToActionResult(result);
         }
 
@@ -42,7 +42,7 @@ namespace WebApi.Controllers.ClientApi
             [FromQuery] PostPagingRequest request
         )
         {
-            var result = await _postService.ClientGetPostsByTagAsync(tagSlug, request);
+            var result = await _postService.GetPostsByTagAsync(tagSlug, request);
             return ToActionResult(result);
         }
 
@@ -51,7 +51,7 @@ namespace WebApi.Controllers.ClientApi
             [FromRoute] Guid postId
         )
         {
-            var result = await _postService.ClientGetPostByIdAsync(postId);
+            var result = await _postService.GetPostByIdAsync(postId);
             return ToActionResult(result);
         }
     }

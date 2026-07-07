@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authorization;
 using WebApi.Extensions;
+using static Domain.Constants.Permissions;
 
 namespace WebApi.Controllers.AdminApi
 {
@@ -17,9 +18,9 @@ namespace WebApi.Controllers.AdminApi
     [Authorize]
     public class AdminPostController : ApiControllerBase
     {
-        private readonly IPostService _postService;
+        private readonly IAdminPostService _postService;
 
-        public AdminPostController(IPostService postService)
+        public AdminPostController(IAdminPostService postService)
         {
             _postService = postService;
         }
@@ -32,7 +33,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminGetAllPostsAsync(request, currentUserId);
+            var result = await _postService.GetAllPostsAsync(request, currentUserId);
             return ToActionResult(result);
         }
 
@@ -41,7 +42,18 @@ namespace WebApi.Controllers.AdminApi
         public async Task<ActionResult<ReadResponse<Post>>> GetPostById([FromRoute] Guid postId)
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminGetPostByIdAsync(postId, currentUserId);
+            var result = await _postService.GetPostByIdAsync(postId, currentUserId);
+            return ToActionResult(result);
+        }
+
+        [HttpGet("reject-reason/{postId}")]
+        [HasPermission(Permissions.Posts.View)]
+        public async Task<ActionResult<ReadResponse<string>>> GetRejectReason(
+            [FromRoute] Guid postId
+        )
+        {
+            var userId = User.GetUserId();
+            var result = await _postService.GetRejectReasonAsync(postId, userId);
             return ToActionResult(result);
         }
 
@@ -53,7 +65,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminCreatePostAsync(request, currentUserId);
+            var result = await _postService.CreatePostAsync(request, currentUserId);
             return ToActionResult(result);
         }
 
@@ -65,7 +77,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminUpdatePostAsync(request, postId, currentUserId);
+            var result = await _postService.UpdatePostAsync(request, postId, currentUserId);
             return ToActionResult(result);
         }
 
@@ -74,7 +86,7 @@ namespace WebApi.Controllers.AdminApi
         public async Task<ActionResult<WriteResponse>> DeletePost([FromQuery] Guid[] ids)
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminDeletePostAsync(ids, currentUserId);
+            var result = await _postService.DeletePostAsync(ids, currentUserId);
             return ToActionResult(result);
         }
 
@@ -86,7 +98,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminApprovePostAsync(postId, currentUserId, note);
+            var result = await _postService.ApprovePostAsync(postId, currentUserId, note);
             return ToActionResult(result);
         }
 
@@ -98,7 +110,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminRejectPostAsync(postId, currentUserId, note);
+            var result = await _postService.RejectPostAsync(postId, currentUserId, note);
             return ToActionResult(result);
         }
 
@@ -109,7 +121,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.AdminSubmitPostForApprovalAsync(
+            var result = await _postService.SubmitPostForApprovalAsync(
                 postId,
                 currentUserId,
                 note

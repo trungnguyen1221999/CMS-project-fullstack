@@ -35,7 +35,7 @@ namespace Application.Tests.Post.Tests
                 .Returns(new List<AppPost> { existingPost }.BuildMockQueryable());
 
                             // Act
-                            var result = await _postService.AdminCreatePostAsync(request, userId);
+                            var result = await _adminPostService.CreatePostAsync(request, userId);
 
                             // Assert
                             Assert.False(result.IsSuccess);
@@ -58,7 +58,7 @@ namespace Application.Tests.Post.Tests
                                 .ReturnsAsync((AppUser?)null);
 
             // Act
-            var result = await _postService.AdminCreatePostAsync(request, userId);
+            var result = await _adminPostService.CreatePostAsync(request, userId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -94,7 +94,7 @@ namespace Application.Tests.Post.Tests
                                 .Returns(new List<PostCategory>().BuildMockQueryable());
 
             // Act
-            var result = await _postService.AdminCreatePostAsync(request, userId);
+            var result = await _adminPostService.CreatePostAsync(request, userId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -148,7 +148,7 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(1);
 
             // Act
-            var result = await _postService.AdminCreatePostAsync(request, userId);
+            var result = await _adminPostService.CreatePostAsync(request, userId);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -199,7 +199,7 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
             // Act
-            var result = await _postService.AdminCreatePostAsync(request, userId);
+            var result = await _adminPostService.CreatePostAsync(request, userId);
 
             // Assert
             Assert.False(result.IsSuccess);

@@ -14,8 +14,9 @@ namespace Application.Tests.Post.Tests
         private readonly Mock<UserManager<AppUser>> _mockUserManager;
         private readonly Mock<IPermissionService> _mockPermissionService;
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-        private readonly IPostService _postService;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly IAdminPostService _adminPostService;
+        private readonly IClientPostService _clientPostService;
 
         public PostServiceTest()
         {
@@ -23,9 +24,13 @@ namespace Application.Tests.Post.Tests
             _mockPermissionService = new Mock<IPermissionService>();
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockMapper = new Mock<IMapper>();
-            _postService = new PostService(
+            _adminPostService = new AdminPostService(
                 _mockUserManager.Object,
                 _mockPermissionService.Object,
+                _mockUnitOfWork.Object,
+                _mockMapper.Object
+            );
+            _clientPostService = new ClientPostService(
                 _mockUnitOfWork.Object,
                 _mockMapper.Object
             );

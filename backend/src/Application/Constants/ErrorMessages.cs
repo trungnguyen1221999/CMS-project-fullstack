@@ -38,6 +38,8 @@ namespace Application.Constants
             public const string ApproveFailed = "APPROVE_POST_FAILED";
             public const string RejectFailed = "REJECT_POST_FAILED";
             public const string SubmitForApprovalFailed = "SUBMIT_FOR_APPROVAL_FAILED";
+            public const string PostNotRejected = "POST_NOT_REJECTED";
+            public const string FailToGetRejectReason = "FAIL_TO_GET_REJECT_REASON";
         }
 
         public static class Category

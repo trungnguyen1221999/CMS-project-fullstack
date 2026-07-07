@@ -1,4 +1,4 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Common;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
@@ -15,14 +15,14 @@ using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.Post
 {
-    public class PostService : IPostService
+    public class AdminPostService : IAdminPostService
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IPermissionService _permissionService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public PostService(
+        public AdminPostService(
             UserManager<AppUser> userManager,
             IPermissionService permissionService,
             IUnitOfWork unitOfWork,
@@ -35,8 +35,7 @@ namespace Application.Services.Post
             _mapper = mapper;
         }
 
-        // Admin
-        public async Task<ReadResponse<PageResult<PostInListResponse>>> AdminGetAllPostsAsync(
+        public async Task<ReadResponse<PageResult<PostInListResponse>>> GetAllPostsAsync(
             GetAllPostsRequest request,
             Guid currentUserId
         )
@@ -60,7 +59,7 @@ namespace Application.Services.Post
             return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
         }
 
-        public async Task<ReadResponse<AppPost>> AdminGetPostByIdAsync(
+        public async Task<ReadResponse<AppPost>> GetPostByIdAsync(
             Guid postId,
             Guid currentUserId
         )
@@ -89,7 +88,7 @@ namespace Application.Services.Post
             return ReadResponse<AppPost>.Success(post);
         }
 
-        public async Task<WriteResponse> AdminCreatePostAsync(
+        public async Task<WriteResponse> CreatePostAsync(
             CreateUpdatePostRequest request,
             Guid userId
         )
@@ -132,7 +131,7 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.CreatePostFailed);
         }
 
-        public async Task<WriteResponse> AdminUpdatePostAsync(
+        public async Task<WriteResponse> UpdatePostAsync(
             CreateUpdatePostRequest request,
             Guid postId,
             Guid userId
@@ -171,7 +170,7 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.UpdatePostFailed);
         }
 
-        public async Task<WriteResponse> AdminDeletePostAsync(Guid[] ids, Guid currentUserId)
+        public async Task<WriteResponse> DeletePostAsync(Guid[] ids, Guid currentUserId)
         {
             var (user, userError) = await GetUserAndValidateAsync(currentUserId);
             if (userError != null)
@@ -198,7 +197,7 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.DeleteFailed);
         }
 
-        public async Task<WriteResponse> AdminApprovePostAsync(
+        public async Task<WriteResponse> ApprovePostAsync(
             Guid postId,
             Guid currentUserId,
             string? note
@@ -210,7 +209,7 @@ namespace Application.Services.Post
             var (user, userError) = await GetUserAndValidateAsync(currentUserId);
             if (userError != null)
                 return userError;
-            var approved = await _unitOfWork.Posts.Approve(postId, currentUserId, note);
+            var approved = await _unitOfWork.Posts.Approve(post, user, note);
             if (!approved)
                 return WriteResponse.Failure(ErrorMessages.Post.ApproveFailed);
             var result = await _unitOfWork.CompleteAsync();
@@ -219,7 +218,7 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.ApproveFailed);
         }
 
-        public async Task<WriteResponse> AdminRejectPostAsync(
+        public async Task<WriteResponse> RejectPostAsync(
             Guid postId,
             Guid currentUserId,
             string? note
@@ -231,7 +230,7 @@ namespace Application.Services.Post
             var (user, userError) = await GetUserAndValidateAsync(currentUserId);
             if (userError != null)
                 return userError;
-            var rejected = await _unitOfWork.Posts.Reject(postId, currentUserId, note);
+            var rejected = await _unitOfWork.Posts.Reject(post, user, note);
             if (!rejected)
                 return WriteResponse.Failure(ErrorMessages.Post.RejectFailed);
             var result = await _unitOfWork.CompleteAsync();
@@ -240,7 +239,7 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.RejectFailed);
         }
 
-        public async Task<WriteResponse> AdminSubmitPostForApprovalAsync(
+        public async Task<WriteResponse> SubmitPostForApprovalAsync(
             Guid postId,
             Guid userId,
             string? note
@@ -255,7 +254,7 @@ namespace Application.Services.Post
             if (post.AuthorUserId != userId)
                 return WriteResponse.Failure(ErrorMessages.Post.InsufficientPostPermission);
 
-            var submit = await _unitOfWork.Posts.SubmitForApproval(postId, userId, note);
+            var submit = await _unitOfWork.Posts.SubmitForApproval(post, user, note);
             if (!submit)
                 return WriteResponse.Failure(ErrorMessages.Post.SubmitForApprovalFailed);
             var result = await _unitOfWork.CompleteAsync();
@@ -264,39 +263,23 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.SubmitForApprovalFailed);
         }
 
-        // Client
-        public async Task<ReadResponse<PageResult<PostInListResponse>>> ClientGetAllPostsAsync(
-            PostPagingRequest request
-        )
-        {
-            var posts = await _unitOfWork.Posts.GetPublishedPostsAsync(request);
-            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
-        }
-
-        public async Task<ReadResponse<PostResponse>> ClientGetPostByIdAsync(Guid postId)
+        public async Task<ReadResponse<string>> GetRejectReasonAsync(Guid postId, Guid userId)
         {
             var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null || post.Status != PostStatus.Published)
-                return ReadResponse<PostResponse>.Failure(ErrorMessages.Post.PostNotFound);
-            var postResponse = _mapper.Map<AppPost, PostResponse>(post);
-            return ReadResponse<PostResponse>.Success(postResponse);
-        }
-
-        public async Task<
-            ReadResponse<PageResult<PostInListResponse>>
-        > ClientGetPostsByCategoryAsync(string categorySlug, PostPagingRequest request)
-        {
-            var posts = await _unitOfWork.Posts.GetPostsByCategoryAsync(categorySlug, request);
-            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
-        }
-
-        public async Task<ReadResponse<PageResult<PostInListResponse>>> ClientGetPostsByTagAsync(
-            string tagSlug,
-            PostPagingRequest request
-        )
-        {
-            var posts = await _unitOfWork.Posts.GetPostsByTagAsync(tagSlug, request);
-            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
+            if (post == null)
+                return ReadResponse<string>.Failure(ErrorMessages.Post.PostNotFound);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                return ReadResponse<string>.Failure(ErrorMessages.User.UserNotFound);
+            if (post.Status != PostStatus.Rejected)
+                return ReadResponse<string>.Failure(ErrorMessages.Post.PostNotRejected);
+            var hasApprovePostPermission = _permissionService.HasApprovedPostPermission(user.Id);
+            if (post.AuthorUserId != userId && hasApprovePostPermission)
+                return ReadResponse<string>.Failure(ErrorMessages.Post.InsufficientPostPermission);
+            var result = await _unitOfWork.PostActivityLogs.GetRejectReasonAsync(post, user);
+            return !string.IsNullOrEmpty(result)
+                ? ReadResponse<string>.Success(result)
+                : ReadResponse<string>.Failure(ErrorMessages.Post.FailToGetRejectReason);
         }
 
         // Private helpers

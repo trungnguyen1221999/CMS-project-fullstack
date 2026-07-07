@@ -41,7 +41,7 @@ namespace Application.Tests.Post.Tests
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
                             // Act
-                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
                             // Assert
                             Assert.False(result.IsSuccess);
@@ -65,7 +65,7 @@ namespace Application.Tests.Post.Tests
                                 .ReturnsAsync((AppUser?)null);
 
             // Act
-            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
             // Assert
             Assert.False(result.IsSuccess);
@@ -88,7 +88,7 @@ namespace Application.Tests.Post.Tests
                             _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
                             // Act
-                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
                             // Assert
                             Assert.True(result.IsSuccess);
@@ -112,7 +112,7 @@ namespace Application.Tests.Post.Tests
                             _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
                             // Act
-                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
                             // Assert
                             Assert.False(result.IsSuccess);
@@ -138,7 +138,7 @@ namespace Application.Tests.Post.Tests
                             _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(true);
 
                             // Act
-                            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
                             // Assert
                             Assert.True(result.IsSuccess);
@@ -164,7 +164,7 @@ namespace Application.Tests.Post.Tests
                             _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(false);
 
             // Act
-            var result = await _postService.AdminGetPostByIdAsync(postId, userId);
+            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
             // Assert
             Assert.False(result.IsSuccess);

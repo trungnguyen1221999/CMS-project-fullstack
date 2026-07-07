@@ -2,6 +2,7 @@
 using Application.Contracts.Posts.Response;
 using Domain;
 using Domain.Cores.Content;
+using Domain.Cores.Identity;
 
 namespace Application.Repositories
 {
@@ -25,9 +26,9 @@ namespace Application.Repositories
 
         Task<PageResult<PostInListResponse>> GetPublishedPostsAsync(PostPagingRequest request);
 
-        Task<bool> Approve(Guid postId, Guid userId, string? note);
-        Task<bool> Reject(Guid postId, Guid userId, string? note);
+        Task<bool> Approve(Post post, User user, string? note);
+        Task<bool> Reject(Post post, User user, string? note);
 
-        Task<bool> SubmitForApproval(Guid postId, Guid userId, string? note);
+        Task<bool> SubmitForApproval(Post post, User user, string? note);
     }
 }

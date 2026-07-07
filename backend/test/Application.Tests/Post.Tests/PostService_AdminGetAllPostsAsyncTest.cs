@@ -1,4 +1,4 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Domain;
@@ -58,7 +58,7 @@ namespace Application.Tests.Post.Tests
                 .ReturnsAsync((AppUser?)null);
             // Act
 
-            var result = await _postService.AdminGetAllPostsAsync(request, userId);
+            var result = await _adminPostService.GetAllPostsAsync(request, userId);
             // Assert
 
             Assert.False(result.IsSuccess);
@@ -87,7 +87,7 @@ namespace Application.Tests.Post.Tests
                 .ReturnsAsync(fakePageResult);
 
             // Act
-            var result = await _postService.AdminGetAllPostsAsync(request, userId);
+            var result = await _adminPostService.GetAllPostsAsync(request, userId);
 
             // Assert
             Assert.True(result.IsSuccess);
@@ -119,7 +119,7 @@ namespace Application.Tests.Post.Tests
                 .ReturnsAsync(fakePageResult);
 
             // Act
-            var result = await _postService.AdminGetAllPostsAsync(request, userId);
+            var result = await _adminPostService.GetAllPostsAsync(request, userId);
 
             // Assert
             Assert.True(result.IsSuccess);
