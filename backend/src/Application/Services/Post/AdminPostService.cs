@@ -35,6 +35,7 @@ namespace Application.Services.Post
             _mapper = mapper;
         }
 
+        //Read
         public async Task<ReadResponse<PageResult<PostInListResponse>>> GetAllPostsAsync(
             GetAllPostsRequest request,
             Guid currentUserId
@@ -59,19 +60,16 @@ namespace Application.Services.Post
             return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
         }
 
-        public async Task<ReadResponse<AppPost>> GetPostByIdAsync(
-            Guid postId,
-            Guid currentUserId
-        )
+        public async Task<ReadResponse<AppPost>> GetPostByIdAsync(Guid postId, Guid currentUserId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null)
-                return ReadResponse<AppPost>.Failure(ErrorMessages.Post.PostNotFound);
+            var (post, postError) = await FindPostOrFailAsync(postId);
+            if (postError != null)
+                return ToReadFailure<AppPost>(postError);
 
             //Check current user is the author of the post or not
-            var user = await _userManager.FindByIdAsync(currentUserId.ToString());
-            if (user == null)
-                return ReadResponse<AppPost>.Failure(ErrorMessages.User.UserNotFound);
+            var (user, userError) = await FindUserOrFailAsync(currentUserId);
+            if (userError != null)
+                return ToReadFailure<AppPost>(userError);
 
             //Author can view their own post (including draft)
             if (user.Id == post.AuthorUserId)
@@ -88,6 +86,22 @@ namespace Application.Services.Post
             return ReadResponse<AppPost>.Success(post);
         }
 
+        public async Task<ReadResponse<List<PostActivityLog>>> GetActivityLogsAsync(
+            Guid postId,
+            Guid userId
+        )
+        {
+            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null)
+                return ReadResponse<List<PostActivityLog>>.Failure(ErrorMessages.Post.PostNotFound);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                return ReadResponse<List<PostActivityLog>>.Failure(ErrorMessages.User.UserNotFound);
+            var logs = await _unitOfWork.PostActivityLogs.GetActivityLogsAsync(post, user);
+            return ReadResponse<List<PostActivityLog>>.Success(logs);
+        }
+
+        //Write
         public async Task<WriteResponse> CreatePostAsync(
             CreateUpdatePostRequest request,
             Guid userId
@@ -101,7 +115,7 @@ namespace Application.Services.Post
                 return WriteResponse.Failure(ErrorMessages.Post.SlugAlreadyExists);
             //Set author info
 
-            var (user, userError) = await GetUserAndValidateAsync(userId);
+            var (user, userError) = await FindUserOrFailAsync(userId);
             if (userError != null)
                 return userError;
 
@@ -137,7 +151,7 @@ namespace Application.Services.Post
             Guid userId
         )
         {
-            var (post, postError) = await GetPostAndValidateAsync(postId);
+            var (post, postError) = await FindPostOrFailAsync(postId);
             if (postError != null)
                 return postError;
 
@@ -172,7 +186,7 @@ namespace Application.Services.Post
 
         public async Task<WriteResponse> DeletePostAsync(Guid[] ids, Guid currentUserId)
         {
-            var (user, userError) = await GetUserAndValidateAsync(currentUserId);
+            var (user, userError) = await FindUserOrFailAsync(currentUserId);
             if (userError != null)
                 return userError;
             var hasDeletePostPermission = _permissionService.HasDeletePostPermission(user.Id);
@@ -203,10 +217,10 @@ namespace Application.Services.Post
             string? note
         )
         {
-            var (post, postError) = await GetPostAndValidateAsync(postId);
+            var (post, postError) = await FindPostOrFailAsync(postId);
             if (postError != null)
                 return postError;
-            var (user, userError) = await GetUserAndValidateAsync(currentUserId);
+            var (user, userError) = await FindUserOrFailAsync(currentUserId);
             if (userError != null)
                 return userError;
             var approved = await _unitOfWork.Posts.Approve(post, user, note);
@@ -224,10 +238,10 @@ namespace Application.Services.Post
             string? note
         )
         {
-            var (post, postError) = await GetPostAndValidateAsync(postId);
+            var (post, postError) = await FindPostOrFailAsync(postId);
             if (postError != null)
                 return postError;
-            var (user, userError) = await GetUserAndValidateAsync(currentUserId);
+            var (user, userError) = await FindUserOrFailAsync(currentUserId);
             if (userError != null)
                 return userError;
             var rejected = await _unitOfWork.Posts.Reject(post, user, note);
@@ -245,10 +259,10 @@ namespace Application.Services.Post
             string? note
         )
         {
-            var (post, postError) = await GetPostAndValidateAsync(postId);
+            var (post, postError) = await FindPostOrFailAsync(postId);
             if (postError != null)
                 return postError;
-            var (user, userError) = await GetUserAndValidateAsync(userId);
+            var (user, userError) = await FindUserOrFailAsync(userId);
             if (userError != null)
                 return userError;
             if (post.AuthorUserId != userId)
@@ -265,12 +279,12 @@ namespace Application.Services.Post
 
         public async Task<ReadResponse<string>> GetRejectReasonAsync(Guid postId, Guid userId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null)
-                return ReadResponse<string>.Failure(ErrorMessages.Post.PostNotFound);
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null)
-                return ReadResponse<string>.Failure(ErrorMessages.User.UserNotFound);
+            var (post, postError) = await FindPostOrFailAsync(postId);
+            if (postError != null)
+                return ToReadFailure<string>(postError);
+            var (user, userError) = await FindUserOrFailAsync(userId);
+            if (userError != null)
+                return ToReadFailure<string>(userError);
             if (post.Status != PostStatus.Rejected)
                 return ReadResponse<string>.Failure(ErrorMessages.Post.PostNotRejected);
             var hasApprovePostPermission = _permissionService.HasApprovedPostPermission(user.Id);
@@ -283,9 +297,7 @@ namespace Application.Services.Post
         }
 
         // Private helpers
-        private async Task<(AppPost Post, WriteResponse? Error)> GetPostAndValidateAsync(
-            Guid postId
-        )
+        private async Task<(AppPost Post, WriteResponse? Error)> FindPostOrFailAsync(Guid postId)
         {
             var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
             return post == null
@@ -293,15 +305,16 @@ namespace Application.Services.Post
                 : (post, null);
         }
 
-        private async Task<(AppUser User, WriteResponse? Error)> GetUserAndValidateAsync(
-            Guid userId
-        )
+        private async Task<(AppUser User, WriteResponse? Error)> FindUserOrFailAsync(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
             return user == null
                 ? (null!, WriteResponse.Failure(ErrorMessages.User.UserNotFound))
                 : (user, null);
         }
+
+        private static ReadResponse<T> ToReadFailure<T>(WriteResponse error) =>
+            ReadResponse<T>.Failure(error.ErrorCode!);
 
         private async Task ProcessTagsAsync(Guid postId, string[] tags)
         {

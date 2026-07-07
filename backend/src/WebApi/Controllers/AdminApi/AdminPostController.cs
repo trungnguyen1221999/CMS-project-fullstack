@@ -57,6 +57,17 @@ namespace WebApi.Controllers.AdminApi
             return ToActionResult(result);
         }
 
+        [HttpGet("activity-logs/{postId}")]
+        [Authorize(Posts.Approve)]
+        public async Task<ActionResult<List<PostActivityLog>>> GetActivityLogs(
+            [FromRoute] Guid postId
+        )
+        {
+            var userId = User.GetUserId();
+            var logs = await _postService.GetActivityLogsAsync(postId, userId);
+            return Ok(logs);
+        }
+
         //Write
         [HttpPost]
         [HasPermission(Permissions.Posts.Create)]
@@ -121,11 +132,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.SubmitPostForApprovalAsync(
-                postId,
-                currentUserId,
-                note
-            );
+            var result = await _postService.SubmitPostForApprovalAsync(postId, currentUserId, note);
             return ToActionResult(result);
         }
     }

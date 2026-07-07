@@ -12,6 +12,14 @@ namespace Infrastructure.Repositories
         public PostActivityLogRepository(ApplicationDbContext context)
             : base(context) { }
 
+        public async Task<List<PostActivityLog>> GetActivityLogsAsync(Post post, User user)
+        {
+            var logs = await _context
+                .PostActivityLogs.Where(l => l.PostId == post.Id && l.UserId == user.Id)
+                .ToListAsync();
+            return logs;
+        }
+
         public async Task<string> GetRejectReasonAsync(Post post, User user)
         {
             var log = await _context
