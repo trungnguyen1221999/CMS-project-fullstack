@@ -23,7 +23,7 @@ namespace WebApi.Controllers.ClientApi
             ActionResult<ReadResponse<PageResult<PostInListResponse>>>
         > GetPublishedPosts([FromQuery] PostPagingRequest request)
         {
-            var result = await _postService.GetPublishedPostsAsync(request);
+            var result = await _postService.ClientGetAllPostsAsync(request);
             return ToActionResult(result);
         }
 
@@ -32,7 +32,7 @@ namespace WebApi.Controllers.ClientApi
             ActionResult<ReadResponse<PageResult<PostInListResponse>>>
         > GetPostsByCategory([FromRoute] string categorySlug, [FromQuery] PostPagingRequest request)
         {
-            var result = await _postService.GetPostsByCategoryAsync(categorySlug, request);
+            var result = await _postService.ClientGetPostsByCategoryAsync(categorySlug, request);
             return ToActionResult(result);
         }
 
@@ -42,7 +42,16 @@ namespace WebApi.Controllers.ClientApi
             [FromQuery] PostPagingRequest request
         )
         {
-            var result = await _postService.GetPostsByTagAsync(tagSlug, request);
+            var result = await _postService.ClientGetPostsByTagAsync(tagSlug, request);
+            return ToActionResult(result);
+        }
+
+        [HttpGet("{postId}")]
+        public async Task<ActionResult<ReadResponse<PostResponse>>> GetPostById(
+            [FromRoute] Guid postId
+        )
+        {
+            var result = await _postService.ClientGetPostByIdAsync(postId);
             return ToActionResult(result);
         }
     }

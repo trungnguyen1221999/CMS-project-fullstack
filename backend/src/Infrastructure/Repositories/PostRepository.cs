@@ -28,11 +28,12 @@ namespace Infrastructure.Repositories
 
             if (hasApprovePostPermission)
             {
-                // Editor/Admin: own posts (all statuses) + others' posts (only WaitingForApproval, Published)
+                // Editor/Admin: own posts (all statuses) + others' posts (only WaitingForApproval, Published, Rejected)
                 query = query.Where(q =>
                     q.AuthorUserId == currentUserId
                     || q.Status == PostStatus.WaitingForApproval
                     || q.Status == PostStatus.Published
+                    || q.Status == PostStatus.Rejected
                 );
             }
             else

@@ -2,36 +2,43 @@
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Domain;
+using AppPost = Domain.Cores.Content.Post;
 
 namespace Application.Services.Post
 {
     public interface IPostService
     {
-        Task<ReadResponse<PageResult<PostInListResponse>>> GetAllPostsAsync(
+        // Admin
+        Task<ReadResponse<PageResult<PostInListResponse>>> AdminGetAllPostsAsync(
             GetAllPostsRequest request,
             Guid currentUserId
         );
 
-        Task<ReadResponse<PageResult<PostInListResponse>>> GetPostsByCategoryAsync(
+        Task<ReadResponse<AppPost>> AdminGetPostByIdAsync(Guid postId, Guid currentUserId);
+
+        Task<WriteResponse> AdminCreatePostAsync(CreateUpdatePostRequest request, Guid userId);
+
+        Task<WriteResponse> AdminUpdatePostAsync(
+            CreateUpdatePostRequest request,
+            Guid postId,
+            Guid userId
+        );
+
+        // Client
+        Task<ReadResponse<PageResult<PostInListResponse>>> ClientGetAllPostsAsync(
+            PostPagingRequest request
+        );
+
+        Task<ReadResponse<PostResponse>> ClientGetPostByIdAsync(Guid postId);
+
+        Task<ReadResponse<PageResult<PostInListResponse>>> ClientGetPostsByCategoryAsync(
             string categorySlug,
             PostPagingRequest request
         );
 
-        Task<ReadResponse<PageResult<PostInListResponse>>> GetPostsByTagAsync(
+        Task<ReadResponse<PageResult<PostInListResponse>>> ClientGetPostsByTagAsync(
             string tagSlug,
             PostPagingRequest request
-        );
-
-        Task<ReadResponse<PageResult<PostInListResponse>>> GetPublishedPostsAsync(
-            PostPagingRequest request
-        );
-
-        Task<WriteResponse> CreatePostAsync(CreateUpdatePostRequest request, Guid userId);
-
-        Task<WriteResponse> UpdatePostAsync(
-            CreateUpdatePostRequest request,
-            Guid postId,
-            Guid userId
         );
     }
 }

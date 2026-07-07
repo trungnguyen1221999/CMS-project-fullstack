@@ -35,7 +35,8 @@ namespace Application.Services.Post
             _mapper = mapper;
         }
 
-        public async Task<ReadResponse<PageResult<PostInListResponse>>> GetAllPostsAsync(
+        // Admin
+        public async Task<ReadResponse<PageResult<PostInListResponse>>> AdminGetAllPostsAsync(
             GetAllPostsRequest request,
             Guid currentUserId
         )
@@ -60,33 +61,36 @@ namespace Application.Services.Post
             return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
         }
 
-        public async Task<ReadResponse<PageResult<PostInListResponse>>> GetPostsByCategoryAsync(
-            string categorySlug,
-            PostPagingRequest request
+        public async Task<ReadResponse<AppPost>> AdminGetPostByIdAsync(
+            Guid postId,
+            Guid currentUserId
         )
         {
-            var posts = await _unitOfWork.Posts.GetPostsByCategoryAsync(categorySlug, request);
-            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
+            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null)
+                return ReadResponse<AppPost>.Failure(ErrorMessages.Post.PostNotFound);
+
+            //Check current user is the author of the post or not
+            var user = await _userManager.FindByIdAsync(currentUserId.ToString());
+            if (user == null)
+                return ReadResponse<AppPost>.Failure(ErrorMessages.User.UserNotFound);
+
+            //Author can view their own post (including draft)
+            if (user.Id == post.AuthorUserId)
+                return ReadResponse<AppPost>.Success(post);
+
+            //Only authors can view their own draft post
+            if (post.Status == PostStatus.Draft)
+                return ReadResponse<AppPost>.Failure(ErrorMessages.Post.PostNotFound);
+
+            var hasApprovePostPermission = _permissionService.HasApprovedPostPermission(user.Id);
+            // Editors, Admins can view all non-draft posts
+            if (!hasApprovePostPermission)
+                return ReadResponse<AppPost>.Failure(ErrorMessages.Post.InsufficientPostPermission);
+            return ReadResponse<AppPost>.Success(post);
         }
 
-        public async Task<ReadResponse<PageResult<PostInListResponse>>> GetPostsByTagAsync(
-            string tagSlug,
-            PostPagingRequest request
-        )
-        {
-            var posts = await _unitOfWork.Posts.GetPostsByTagAsync(tagSlug, request);
-            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
-        }
-
-        public async Task<ReadResponse<PageResult<PostInListResponse>>> GetPublishedPostsAsync(
-            PostPagingRequest request
-        )
-        {
-            var posts = await _unitOfWork.Posts.GetPublishedPostsAsync(request);
-            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
-        }
-
-        public async Task<WriteResponse> CreatePostAsync(
+        public async Task<WriteResponse> AdminCreatePostAsync(
             CreateUpdatePostRequest request,
             Guid userId
         )
@@ -129,7 +133,7 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.CreatePostFailed);
         }
 
-        public async Task<WriteResponse> UpdatePostAsync(
+        public async Task<WriteResponse> AdminUpdatePostAsync(
             CreateUpdatePostRequest request,
             Guid postId,
             Guid userId
@@ -169,6 +173,41 @@ namespace Application.Services.Post
                 : WriteResponse.Failure(ErrorMessages.Post.UpdatePostFailed);
         }
 
+        // Client
+        public async Task<ReadResponse<PageResult<PostInListResponse>>> ClientGetAllPostsAsync(
+            PostPagingRequest request
+        )
+        {
+            var posts = await _unitOfWork.Posts.GetPublishedPostsAsync(request);
+            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
+        }
+
+        public async Task<ReadResponse<PostResponse>> ClientGetPostByIdAsync(Guid postId)
+        {
+            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null || post.Status != PostStatus.Published)
+                return ReadResponse<PostResponse>.Failure(ErrorMessages.Post.PostNotFound);
+            var postResponse = _mapper.Map<AppPost, PostResponse>(post);
+            return ReadResponse<PostResponse>.Success(postResponse);
+        }
+
+        public async Task<
+            ReadResponse<PageResult<PostInListResponse>>
+        > ClientGetPostsByCategoryAsync(string categorySlug, PostPagingRequest request)
+        {
+            var posts = await _unitOfWork.Posts.GetPostsByCategoryAsync(categorySlug, request);
+            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
+        }
+
+        public async Task<ReadResponse<PageResult<PostInListResponse>>> ClientGetPostsByTagAsync(
+            string tagSlug,
+            PostPagingRequest request
+        )
+        {
+            var posts = await _unitOfWork.Posts.GetPostsByTagAsync(tagSlug, request);
+            return ReadResponse<PageResult<PostInListResponse>>.Success(posts);
+        }
+
         private async Task ProcessTagsAsync(Guid postId, string[] tags)
         {
             if (tags == null || tags.Length == 0)
@@ -177,20 +216,20 @@ namespace Application.Services.Post
             foreach (var tagName in tags)
             {
                 var tagSlug = TextHelper.GenerateSlug(tagName);
-                var tag = await _unitOfWork
-                    .Tags.Find(t => t.Slug == tagSlug)
-                    .FirstOrDefaultAsync();
+                var tag = await _unitOfWork.Tags.Find(t => t.Slug == tagSlug).FirstOrDefaultAsync();
 
                 var tagId = tag?.Id ?? Guid.NewGuid();
 
                 if (tag == null)
                 {
-                    _unitOfWork.Tags.Add(new Tag
-                    {
-                        Id = tagId,
-                        Name = tagName,
-                        Slug = tagSlug,
-                    });
+                    _unitOfWork.Tags.Add(
+                        new Tag
+                        {
+                            Id = tagId,
+                            Name = tagName,
+                            Slug = tagSlug,
+                        }
+                    );
                 }
 
                 _unitOfWork.PostTags.AddTagToPost(postId, tagId);

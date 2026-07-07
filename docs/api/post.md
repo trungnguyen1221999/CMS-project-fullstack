@@ -64,7 +64,7 @@ Post listing and management for both client-side and admin-side APIs.
 }
 ```
 
-> `status` is a numeric enum (`PostStatus`) — document the exact mapping (e.g. Draft/WaitingForApproval/Published) once confirmed.
+> `status` is a numeric enum (`PostStatus`)
 
 ### Errors
 No business errors are returned by service for this endpoint.

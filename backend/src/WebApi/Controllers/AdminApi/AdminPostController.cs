@@ -4,6 +4,7 @@ using Application.Contracts.Posts.Response;
 using Application.Services.Post;
 using Domain;
 using Domain.Constants;
+using Domain.Cores.Content;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authorization;
@@ -23,6 +24,7 @@ namespace WebApi.Controllers.AdminApi
             _postService = postService;
         }
 
+        //Read
         [HttpGet]
         [HasPermission(Permissions.Posts.View)]
         public async Task<ActionResult<ReadResponse<PageResult<PostInListResponse>>>> GetAllPosts(
@@ -30,10 +32,20 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.GetAllPostsAsync(request, currentUserId);
+            var result = await _postService.AdminGetAllPostsAsync(request, currentUserId);
             return ToActionResult(result);
         }
 
+        [HttpGet("{postId}")]
+        [HasPermission(Permissions.Posts.View)]
+        public async Task<ActionResult<ReadResponse<Post>>> GetPostById([FromRoute] Guid postId)
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _postService.AdminGetPostByIdAsync(postId, currentUserId);
+            return ToActionResult(result);
+        }
+
+        //Write
         [HttpPost]
         [HasPermission(Permissions.Posts.Create)]
         public async Task<ActionResult<WriteResponse>> CreatePost(
@@ -41,7 +53,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.CreatePostAsync(request, currentUserId);
+            var result = await _postService.AdminCreatePostAsync(request, currentUserId);
             return ToActionResult(result);
         }
 
@@ -53,7 +65,7 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.UpdatePostAsync(request, postId, currentUserId);
+            var result = await _postService.AdminUpdatePostAsync(request, postId, currentUserId);
             return ToActionResult(result);
         }
     }
