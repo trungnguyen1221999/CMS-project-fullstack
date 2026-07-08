@@ -1,3 +1,4 @@
+using Application.Contracts.Common;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using AutoMapper;
@@ -104,7 +105,7 @@ namespace Infrastructure.Test.Post.Tests
         {
             // Act
             var result = await _repository.GetPublishedPostsAsync(
-                new PostPagingRequest { CurrentPage = 1, PageSize = 50 }
+                new PagingRequest { CurrentPage = 1, PageSize = 50 }
             );
 
             // Assert: 3 published posts
@@ -117,7 +118,7 @@ namespace Infrastructure.Test.Post.Tests
         {
             // Act: page 1, size 2
             var result = await _repository.GetPublishedPostsAsync(
-                new PostPagingRequest { CurrentPage = 1, PageSize = 2 }
+                new PagingRequest { CurrentPage = 1, PageSize = 2 }
             );
 
             // Assert
@@ -135,7 +136,7 @@ namespace Infrastructure.Test.Post.Tests
             // Act
             var result = await _repository.GetPostsByCategoryAsync(
                 "tech",
-                new PostPagingRequest { CurrentPage = 1, PageSize = 50 }
+                new PagingRequest { CurrentPage = 1, PageSize = 50 }
             );
 
             // Assert: 2 published tech posts
@@ -149,7 +150,7 @@ namespace Infrastructure.Test.Post.Tests
             // Act
             var result = await _repository.GetPostsByCategoryAsync(
                 "nonexistent",
-                new PostPagingRequest { CurrentPage = 1, PageSize = 50 }
+                new PagingRequest { CurrentPage = 1, PageSize = 50 }
             );
 
             // Assert
@@ -163,7 +164,7 @@ namespace Infrastructure.Test.Post.Tests
             // Act: "tech" has Draft, Pending, Rejected posts too, but only Published should return
             var result = await _repository.GetPostsByCategoryAsync(
                 "tech",
-                new PostPagingRequest { CurrentPage = 1, PageSize = 50 }
+                new PagingRequest { CurrentPage = 1, PageSize = 50 }
             );
 
             // Assert
@@ -180,10 +181,10 @@ namespace Infrastructure.Test.Post.Tests
             // Act
             var result = await _repository.GetPostsByTagAsync(
                 "csharp",
-                new PostPagingRequest { CurrentPage = 1, PageSize = 50 }
+                new PagingRequest { CurrentPage = 1, PageSize = 50 }
             );
 
-            // Assert: 2 published posts with "csharp" tag
+            // Assert: 2 published posts
             Assert.Equal(2, result.TotalCount);
         }
 
@@ -193,7 +194,7 @@ namespace Infrastructure.Test.Post.Tests
             // Act
             var result = await _repository.GetPostsByTagAsync(
                 "python",
-                new PostPagingRequest { CurrentPage = 1, PageSize = 50 }
+                new PagingRequest { CurrentPage = 1, PageSize = 50 }
             );
 
             // Assert
@@ -207,7 +208,7 @@ namespace Infrastructure.Test.Post.Tests
             // Act
             var result = await _repository.GetPostsByTagAsync(
                 "travel",
-                new PostPagingRequest { CurrentPage = 1, PageSize = 50 }
+                new PagingRequest { CurrentPage = 1, PageSize = 50 }
             );
 
             // Assert

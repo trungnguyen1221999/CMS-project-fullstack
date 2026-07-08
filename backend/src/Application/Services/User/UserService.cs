@@ -1,4 +1,5 @@
 using Application.Constants;
+using Application.Contracts.Common;
 using Application.Contracts.Users.Requests;
 using Application.Contracts.Users.Responses;
 using Application.UnitOfWork;
@@ -24,16 +25,10 @@ namespace Application.Services.User
         }
 
         public async Task<PageResult<UserListItemResponse>> GetAllAsync(
-            string? keyWord,
-            int currentPage,
-            int pageSize
+            PagingRequest request
         )
         {
-            return await _unitOfWork.Users.GetAllWithRolesAsync(
-                keyWord,
-                currentPage,
-                pageSize
-            );
+            return await _unitOfWork.Users.GetAllWithRolesAsync(request);
         }
 
         public async Task<UserResponse> GetByIdAsync(Guid userId)

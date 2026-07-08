@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Application.Contracts.Common;
 
 namespace Application.Repositories
 {

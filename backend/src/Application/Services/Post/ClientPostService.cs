@@ -1,11 +1,11 @@
 using Application.Constants;
-using Application.Contracts.Posts.Request;
+using Application.Contracts.Common;
 using Application.Contracts.Posts.Response;
 using Application.UnitOfWork;
 using AutoMapper;
 using Domain;
-using static Application.Exceptions.CustomException;
 using Microsoft.EntityFrameworkCore;
+using static Application.Exceptions.CustomException;
 using AppPost = Domain.Cores.Content.Post;
 
 namespace Application.Services.Post
@@ -21,16 +21,15 @@ namespace Application.Services.Post
             _mapper = mapper;
         }
 
-        public async Task<PageResult<PostInListResponse>> GetAllPostsAsync(
-            PostPagingRequest request
-        )
+        public async Task<PageResult<PostInListResponse>> GetAllPostsAsync(PagingRequest request)
         {
             return await _unitOfWork.Posts.GetPublishedPostsAsync(request);
         }
 
         public async Task<PostResponse> GetPostByIdAsync(Guid postId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
             if (post.Status != Domain.Cores.Content.PostStatus.Published)
@@ -41,7 +40,7 @@ namespace Application.Services.Post
 
         public async Task<PageResult<PostInListResponse>> GetPostsByCategoryAsync(
             string categorySlug,
-            PostPagingRequest request
+            PagingRequest request
         )
         {
             return await _unitOfWork.Posts.GetPostsByCategoryAsync(categorySlug, request);
@@ -49,7 +48,7 @@ namespace Application.Services.Post
 
         public async Task<PageResult<PostInListResponse>> GetPostsByTagAsync(
             string tagSlug,
-            PostPagingRequest request
+            PagingRequest request
         )
         {
             return await _unitOfWork.Posts.GetPostsByTagAsync(tagSlug, request);

@@ -1,4 +1,5 @@
-﻿using Application.Services.Category;
+﻿using Application.Contracts.Common;
+using Application.Services.Category;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Extensions;
 
@@ -17,15 +18,24 @@ namespace WebApi.Controllers.ClientApi
 
         //Read
         [HttpGet("{categoryId}")]
-        public async Task<ActionResult> GetCategoryById(
-            Guid categoryId
-        )
+        public async Task<ActionResult> GetActiveCategoryById(Guid categoryId)
         {
-            var currentUserId = User.GetUserId();
-            var result = await _categoryService.GetCategoryByIdAsync(categoryId, currentUserId);
+            var result = await _categoryService.GetActiveCategoryByIdAsync(categoryId);
             return Ok(result);
         }
 
-        //Write
+        [HttpGet]
+        public async Task<ActionResult> GetActiveAllCategories()
+        {
+            var result = await _categoryService.GetAllActiveCategoriesAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("paging")]
+        public async Task<ActionResult> GetActiveCategoriesPaging([FromQuery] PagingRequest request)
+        {
+            var result = await _categoryService.GetActiveCategoriesPagingAsync(request);
+            return Ok(result);
+        }
     }
 }

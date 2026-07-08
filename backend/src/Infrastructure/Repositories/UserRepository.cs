@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Users.Responses;
+﻿using Application.Contracts.Common;
+using Application.Contracts.Users.Responses;
 using Application.Repositories;
 using Domain;
 using Domain.Cores.Identity;
@@ -95,21 +96,17 @@ namespace Infrastructure.Repositories
         }
 
         public async Task<PageResult<UserListItemResponse>> GetAllWithRolesAsync(
-            string? keyWord,
-            int currentPage,
-            int pageSize
+            PagingRequest request
         )
         {
-            if (currentPage <= 0)
-                currentPage = 1;
-            if (pageSize <= 0)
-                pageSize = 10;
+            var currentPage = request.CurrentPage <= 0 ? 1 : request.CurrentPage;
+            var pageSize = request.PageSize <= 0 ? 10 : request.PageSize;
 
             var usersQuery = _context.Users.AsNoTracking().AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(keyWord))
+            if (!string.IsNullOrWhiteSpace(request.Keyword))
             {
-                var keyword = keyWord.Trim();
+                var keyword = request.Keyword.Trim();
                 usersQuery = usersQuery.Where(x =>
                     x.FirstName.Contains(keyword)
                     || x.LastName.Contains(keyword)

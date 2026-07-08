@@ -21,15 +21,11 @@ namespace WebApi.Controllers.AdminApi
             _userService = userService;
         }
 
-        [HttpGet]
+        [HttpGet("paging")]
         [HasPermission(Permissions.Users.View)]
-        public async Task<ActionResult> GetAllUsers(
-            [FromQuery] string? keyWord,
-            [FromQuery] int currentPage = 1,
-            [FromQuery] int pageSize = 10
-        )
+        public async Task<ActionResult> GetAllUsers([FromQuery] PagingRequest request)
         {
-            var result = await _userService.GetAllAsync(keyWord, currentPage, pageSize);
+            var result = await _userService.GetAllAsync(request);
             return Ok(result);
         }
 
@@ -43,9 +39,7 @@ namespace WebApi.Controllers.AdminApi
 
         [HttpPost]
         [HasPermission(Permissions.Users.Create)]
-        public async Task<ActionResult> CreateUser(
-            [FromBody] CreateUserRequest request
-        )
+        public async Task<ActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             await _userService.CreateAsync(request);
             return Ok(WriteResponse.Success());

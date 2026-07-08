@@ -1,3 +1,4 @@
+using Application.Contracts.Common;
 using Application.Contracts.Users.Responses;
 using Domain;
 using Moq;
@@ -9,17 +10,17 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task GetAllAsync_WithData_ReturnSuccess()
         {
-            var testInput = new
+            var request = new PagingRequest
             {
-                KeyWord = "test",
+                Keyword = "test",
                 CurrentPage = 1,
                 PageSize = 10,
             };
 
             var pageResult = new PageResult<UserListItemResponse>
             {
-                CurrentPage = testInput.CurrentPage,
-                PageSize = testInput.PageSize,
+                CurrentPage = request.CurrentPage,
+                PageSize = request.PageSize,
                 TotalCount = 1,
                 Result = new List<UserListItemResponse>
                 {
@@ -28,20 +29,10 @@ namespace Application.Tests.User.Tests
             };
 
             _userRepositoryMock
-                .Setup(x =>
-                    x.GetAllWithRolesAsync(
-                        testInput.KeyWord,
-                        testInput.CurrentPage,
-                        testInput.PageSize
-                    )
-                )
+                .Setup(x => x.GetAllWithRolesAsync(request))
                 .ReturnsAsync(pageResult);
 
-            var result = await _userService.GetAllAsync(
-                testInput.KeyWord,
-                testInput.CurrentPage,
-                testInput.PageSize
-            );
+            var result = await _userService.GetAllAsync(request);
 
             Assert.NotNull(result);
             Assert.Single(result.Result);
@@ -50,36 +41,26 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task GetAllAsync_NoData_ReturnsEmptyResult()
         {
-            var testInput = new
+            var request = new PagingRequest
             {
-                KeyWord = "test",
+                Keyword = "test",
                 CurrentPage = 1,
                 PageSize = 10,
             };
 
             var pageResult = new PageResult<UserListItemResponse>
             {
-                CurrentPage = testInput.CurrentPage,
-                PageSize = testInput.PageSize,
+                CurrentPage = request.CurrentPage,
+                PageSize = request.PageSize,
                 TotalCount = 0,
                 Result = new List<UserListItemResponse>(),
             };
 
             _userRepositoryMock
-                .Setup(x =>
-                    x.GetAllWithRolesAsync(
-                        testInput.KeyWord,
-                        testInput.CurrentPage,
-                        testInput.PageSize
-                    )
-                )
+                .Setup(x => x.GetAllWithRolesAsync(request))
                 .ReturnsAsync(pageResult);
 
-            var result = await _userService.GetAllAsync(
-                testInput.KeyWord,
-                testInput.CurrentPage,
-                testInput.PageSize
-            );
+            var result = await _userService.GetAllAsync(request);
 
             Assert.NotNull(result);
             Assert.Empty(result.Result);

@@ -1,8 +1,9 @@
-﻿namespace Application.Contracts.Posts.Request
+﻿using Application.Contracts.Common;
+
+namespace Application.Contracts.Posts.Request
 {
-    public class GetAllPostsRequest : PostPagingRequest
+    public class GetAllPostsRequest : PagingRequest
     {
-        public string? Keyword { get; set; }
         public Guid? CategoryId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Posts.Request;
+﻿using Application.Contracts.Common;
+using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Domain;
 using Domain.Cores.Content;
@@ -16,15 +17,15 @@ namespace Application.Repositories
 
         Task<PageResult<PostInListResponse>> GetPostsByCategoryAsync(
             string categorySlug,
-            PostPagingRequest request
+            PagingRequest request
         );
 
         Task<PageResult<PostInListResponse>> GetPostsByTagAsync(
             string tagSlug,
-            PostPagingRequest request
+            PagingRequest request
         );
 
-        Task<PageResult<PostInListResponse>> GetPublishedPostsAsync(PostPagingRequest request);
+        Task<PageResult<PostInListResponse>> GetPublishedPostsAsync(PagingRequest request);
 
         Task<bool> Approve(Post post, User user, string? note);
         Task<bool> Reject(Post post, User user, string? note);

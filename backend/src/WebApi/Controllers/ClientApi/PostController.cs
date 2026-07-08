@@ -1,4 +1,4 @@
-﻿using Application.Contracts.Posts.Request;
+﻿using Application.Contracts.Common;
 using Application.Services.Post;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,8 +15,8 @@ namespace WebApi.Controllers.ClientApi
             _postService = postService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult> GetPublishedPosts([FromQuery] PostPagingRequest request)
+        [HttpGet("paging")]
+        public async Task<ActionResult> GetPublishedPosts([FromQuery] PagingRequest request)
         {
             var result = await _postService.GetAllPostsAsync(request);
             return Ok(result);
@@ -25,7 +25,7 @@ namespace WebApi.Controllers.ClientApi
         [HttpGet("category/{categorySlug}")]
         public async Task<ActionResult> GetPostsByCategory(
             [FromRoute] string categorySlug,
-            [FromQuery] PostPagingRequest request
+            [FromQuery] PagingRequest request
         )
         {
             var result = await _postService.GetPostsByCategoryAsync(categorySlug, request);
@@ -35,7 +35,7 @@ namespace WebApi.Controllers.ClientApi
         [HttpGet("tag/{tagSlug}")]
         public async Task<ActionResult> GetPostsByTag(
             [FromRoute] string tagSlug,
-            [FromQuery] PostPagingRequest request
+            [FromQuery] PagingRequest request
         )
         {
             var result = await _postService.GetPostsByTagAsync(tagSlug, request);

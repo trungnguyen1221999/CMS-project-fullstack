@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Application.Constants;
+using Application.Contracts.Common;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Domain;
@@ -16,7 +17,7 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task ClientGetAllPostsAsync_ReturnsSuccess()
         {
-            var request = new PostPagingRequest { CurrentPage = 1, PageSize = 10 };
+            var request = new PagingRequest { CurrentPage = 1, PageSize = 10 };
             var fakePageResult = new PageResult<PostInListResponse>
             {
                 CurrentPage = 1,
@@ -88,7 +89,7 @@ namespace Application.Tests.Post.Tests
         public async Task ClientGetPostsByCategoryAsync_ReturnsSuccess()
         {
             var categorySlug = "tech";
-            var request = new PostPagingRequest { CurrentPage = 1, PageSize = 10 };
+            var request = new PagingRequest { CurrentPage = 1, PageSize = 10 };
             var fakePageResult = new PageResult<PostInListResponse>
             {
                 CurrentPage = 1,
@@ -118,7 +119,7 @@ namespace Application.Tests.Post.Tests
         public async Task ClientGetPostsByTagAsync_ReturnsSuccess()
         {
             var tagSlug = "csharp";
-            var request = new PostPagingRequest { CurrentPage = 1, PageSize = 10 };
+            var request = new PagingRequest { CurrentPage = 1, PageSize = 10 };
             var fakePageResult = new PageResult<PostInListResponse>
             {
                 CurrentPage = 1,

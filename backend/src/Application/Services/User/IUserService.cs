@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Users.Requests;
+﻿using Application.Contracts.Common;
+using Application.Contracts.Users.Requests;
 using Application.Contracts.Users.Responses;
 using Domain;
 
@@ -7,11 +8,7 @@ namespace Application.Services.User
     public interface IUserService
     {
         Task<UserResponse> GetByIdAsync(Guid userId);
-        Task<PageResult<UserListItemResponse>> GetAllAsync(
-            string? keyWord,
-            int currentPage,
-            int pageSize
-        );
+        Task<PageResult<UserListItemResponse>> GetAllAsync(PagingRequest request);
         Task CreateAsync(CreateUserRequest request);
 
         Task UpdateAsync(Guid id, UpdateUserRequest request);

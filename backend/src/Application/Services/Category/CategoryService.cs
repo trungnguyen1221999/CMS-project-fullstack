@@ -1,10 +1,14 @@
 ﻿using Application.Constants;
+using Application.Contracts.Common;
 using Application.Contracts.Posts.Response;
 using Application.Services.Permission;
 using Application.UnitOfWork;
 using AutoMapper;
-using static Application.Exceptions.CustomException;
+using Domain;
+using Domain.Cores.Content;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.Category
@@ -29,26 +33,29 @@ namespace Application.Services.Category
             _permissionService = permissionService;
         }
 
-        public async Task<PostCategoryResponse> GetCategoryByIdAsync(
-            Guid categoryId,
-            Guid currentUserId
+        public async Task<List<PostCategoryResponse>> GetAllActiveCategoriesAsync()
+        {
+            var categories = _unitOfWork.Categories.Find(c => c.IsActive);
+
+            return await _mapper.ProjectTo<PostCategoryResponse>(categories).ToListAsync();
+        }
+
+        public async Task<PostCategoryResponse> GetActiveCategoryByIdAsync(Guid categoryId)
+        {
+            var category = await _unitOfWork
+                .Categories.Find(c => c.IsActive && c.Id == categoryId)
+                .FirstOrDefaultAsync();
+            if (category == null)
+                throw new NotFoundException(ErrorMessages.Category.CategoryNotFound);
+            return _mapper.Map<PostCategory, PostCategoryResponse>(category);
+        }
+
+        public async Task<PageResult<PostCategoryResponse>> GetActiveCategoriesPagingAsync(
+            PagingRequest request
         )
         {
-            var user = await _userManager.FindByIdAsync(currentUserId.ToString())
-                ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
-
-            var category = await _unitOfWork.Categories.GetByIdAsync(categoryId)
-                ?? throw new NotFoundException(ErrorMessages.Category.CategoryNotFound);
-
-            var hasViewActiveCategoryPermission =
-                _permissionService.HasViewActiveCategoryPermission(
-                    currentUserId,
-                    category.IsActive
-                );
-            if (!hasViewActiveCategoryPermission)
-                throw new ForbiddenException(ErrorMessages.Category.InsufficientPermissions);
-
-            return _mapper.Map<PostCategoryResponse>(category);
+            var result = await _unitOfWork.Categories.GetActiveCategoriesPagingAsync(request);
+            return result;
         }
     }
 }

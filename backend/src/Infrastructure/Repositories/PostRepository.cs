@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Posts.Request;
+﻿using Application.Contracts.Common;
+using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Application.Repositories;
 using AutoMapper;
@@ -53,33 +54,37 @@ namespace Infrastructure.Repositories
 
         public async Task<PageResult<PostInListResponse>> GetPostsByCategoryAsync(
             string categorySlug,
-            PostPagingRequest request
+            PagingRequest request
         )
         {
             var query = _context.Posts.Where(q => q.Status == PostStatus.Published);
             if (!string.IsNullOrEmpty(categorySlug))
                 query = query.Where(q => q.CategorySlug == categorySlug);
-
+            if (!string.IsNullOrEmpty(request.Keyword))
+                query = query.Where(q => q.Name.Contains(request.Keyword));
             return await ToPagedResultAsync(query, request);
         }
 
         public async Task<PageResult<PostInListResponse>> GetPostsByTagAsync(
             string tagSlug,
-            PostPagingRequest request
+            PagingRequest request
         )
         {
             var query = _context.Posts.Where(q => q.Status == PostStatus.Published);
             if (!string.IsNullOrEmpty(tagSlug))
                 query = query.Where(q => q.Tags != null && q.Tags.Contains(tagSlug));
-
+            if (!string.IsNullOrEmpty(request.Keyword))
+                query = query.Where(q => q.Name.Contains(request.Keyword));
             return await ToPagedResultAsync(query, request);
         }
 
         public async Task<PageResult<PostInListResponse>> GetPublishedPostsAsync(
-            PostPagingRequest request
+            PagingRequest request
         )
         {
             var query = _context.Posts.Where(q => q.Status == PostStatus.Published);
+            if (!string.IsNullOrEmpty(request.Keyword))
+                query = query.Where(q => q.Name.Contains(request.Keyword));
             return await ToPagedResultAsync(query, request);
         }
 
@@ -119,7 +124,7 @@ namespace Infrastructure.Repositories
 
         private async Task<PageResult<PostInListResponse>> ToPagedResultAsync(
             IQueryable<Post> query,
-            PostPagingRequest request
+            PagingRequest request
         )
         {
             var totalCount = await query.CountAsync();

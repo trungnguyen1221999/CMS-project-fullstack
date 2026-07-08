@@ -1,6 +1,14 @@
-﻿using Domain.Cores.Content;
+﻿using Application.Contracts.Common;
+using Application.Contracts.Posts.Response;
+using Domain;
+using Domain.Cores.Content;
 
 namespace Application.Repositories
 {
-    public interface ICategoryRepository : IRepository<PostCategory, Guid> { }
+    public interface ICategoryRepository : IRepository<PostCategory, Guid>
+    {
+        Task<PageResult<PostCategoryResponse>> GetActiveCategoriesPagingAsync(
+            PagingRequest request
+        );
+    }
 }
