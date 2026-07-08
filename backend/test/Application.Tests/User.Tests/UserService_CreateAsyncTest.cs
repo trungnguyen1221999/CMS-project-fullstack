@@ -1,7 +1,8 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Users.Requests;
 using Microsoft.AspNetCore.Identity;
 using Moq;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.User.Tests
@@ -49,17 +50,14 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task CreateAsync_UserAlreadyExists_ReturnsFailure()
         {
-            // Arrange
             var request = Request();
-            var existingUser = ExistingUser(request);
             UserAlreadyExist(request);
 
-            //Act
-            var result = await _userService.CreateAsync(request);
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserAlreadyExists, result.ErrorCode);
-            //Verify
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _userService.CreateAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.UserAlreadyExists, ex.ErrorCode);
+
             _mapperMock.Verify(
                 x => x.Map<CreateUserRequest, AppUser>(It.IsAny<CreateUserRequest>()),
                 Times.Never
@@ -73,7 +71,6 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task CreateAsync_UserDoesNotExistButCreateFail_ReturnsFailure()
         {
-            // Arrange
             var request = Request();
             UserNotExist(request);
             var newUser = new AppUser { Email = request.Email };
@@ -82,18 +79,15 @@ namespace Application.Tests.User.Tests
                 .Setup(x => x.CreateAsync(newUser, request.Password))
                 .ReturnsAsync(IdentityResult.Failed());
 
-            // Act
-            var result = await _userService.CreateAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.CreateFailed, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _userService.CreateAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.CreateFailed, ex.ErrorCode);
         }
 
         [Fact]
         public async Task CreateAsync_UserDoesNotExistAndCreateSucceeds_ReturnsSuccess()
         {
-            // Arrange
             var request = Request();
             UserNotExist(request);
             var newUser = new AppUser { Email = request.Email };
@@ -102,12 +96,12 @@ namespace Application.Tests.User.Tests
                 .Setup(x => x.CreateAsync(newUser, request.Password))
                 .ReturnsAsync(IdentityResult.Success);
 
-            // Act
-            var result = await _userService.CreateAsync(request);
+            await _userService.CreateAsync(request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Null(result.ErrorCode);
+            _userManagerMock.Verify(
+                x => x.CreateAsync(newUser, request.Password),
+                Times.Once
+            );
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Users.Responses;
 using Moq;
+using static Application.Exceptions.CustomException;
 
 namespace Application.Tests.User.Tests
 {
@@ -9,39 +10,31 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task GetByIdAsync_WithData_ReturnSuccess()
         {
-            //1. Arrange
             var testInput = Guid.NewGuid();
             var user = new UserResponse { Id = testInput, Email = "test@gmail.com" };
 
             _userRepositoryMock.Setup(x => x.GetByIdWithRolesAsync(testInput)).ReturnsAsync(user);
 
-            //2. Act
             var result = await _userService.GetByIdAsync(testInput);
 
-            //3. Assert
-            Assert.NotNull(result.Data);
-            Assert.True(result.IsSuccess);
-            Assert.Equal(user.Id, result.Data.Id);
-            Assert.Equal(user.Email, result.Data.Email);
+            Assert.NotNull(result);
+            Assert.Equal(user.Id, result.Id);
+            Assert.Equal(user.Email, result.Email);
         }
 
         [Fact]
         public async Task GetByIdAsync_WithInvalidId_ReturnsNotFound()
         {
-            //1. Arrange
             var testInput = Guid.NewGuid();
 
             _userRepositoryMock
                 .Setup(x => x.GetByIdWithRolesAsync(testInput))
                 .ReturnsAsync((UserResponse)null);
 
-            //2. Act
-            var result = await _userService.GetByIdAsync(testInput);
-
-            //3. Assert
-            Assert.Null(result.Data);
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _userService.GetByIdAsync(testInput)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
     }
 }

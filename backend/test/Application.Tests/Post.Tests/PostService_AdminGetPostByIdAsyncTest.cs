@@ -3,6 +3,7 @@ using Application.Constants;
 using Domain.Cores.Content;
 using Moq;
 using Test.Shared.Helpers;
+using static Application.Exceptions.CustomException;
 using AppPost = Domain.Cores.Content.Post;
 using AppUser = Domain.Cores.Identity.User;
 
@@ -32,7 +33,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminGetPostByIdAsync_PostNotFound_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
 
@@ -40,18 +40,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-                            // Act
-                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
-
-                            // Assert
-                            Assert.False(result.IsSuccess);
-                            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminGetPostByIdAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var post = CreateFakePost(postId, Guid.NewGuid());
@@ -60,22 +57,19 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-                            _mockUserManager
-                                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                                .ReturnsAsync((AppUser?)null);
+            _mockUserManager
+                .Setup(x => x.FindByIdAsync(userId.ToString()))
+                .ReturnsAsync((AppUser?)null);
 
-            // Act
-            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminGetPostByIdAsync_AuthorViewsOwnDraft_ReturnsSuccess()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var post = CreateFakePost(postId, userId, PostStatus.Draft);
@@ -85,20 +79,16 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-                            // Act
-                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
+            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
-                            // Assert
-                            Assert.True(result.IsSuccess);
-                            Assert.Equal(postId, result.Data!.Id);
+            Assert.Equal(postId, result.Id);
         }
 
         [Fact]
         public async Task AdminGetPostByIdAsync_NonAuthorViewsDraft_ReturnsPostNotFound()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var authorId = Guid.NewGuid();
@@ -109,20 +99,17 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-                            // Act
-                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
-
-                            // Assert
-                            Assert.False(result.IsSuccess);
-                            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminGetPostByIdAsync_EditorWithPermission_ReturnsSuccess()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var authorId = Guid.NewGuid();
@@ -133,22 +120,18 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-                            _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(true);
+            _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(true);
 
-                            // Act
-                            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
+            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
 
-                            // Assert
-                            Assert.True(result.IsSuccess);
-                            Assert.Equal(postId, result.Data!.Id);
+            Assert.Equal(postId, result.Id);
         }
 
         [Fact]
         public async Task AdminGetPostByIdAsync_UserWithoutPermission_ReturnsInsufficientPermission()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var authorId = Guid.NewGuid();
@@ -159,16 +142,14 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-                            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-                            _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(false);
+            _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(false);
 
-            // Act
-            var result = await _adminPostService.GetPostByIdAsync(postId, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.InsufficientPostPermission, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<ForbiddenException>(
+                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.InsufficientPostPermission, ex.ErrorCode);
         }
     }
 }

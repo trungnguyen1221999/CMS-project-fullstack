@@ -1,5 +1,4 @@
 ﻿using Application.Contracts.Auth.Requests;
-using Application.Contracts.Auth.Responses;
 using Application.Contracts.Common;
 using Application.Contracts.Users.Requests;
 using Application.Services.Auth;
@@ -9,7 +8,7 @@ namespace WebApi.Controllers.ClientApi
 {
     [Route("api/auth")]
     [ApiController]
-    public class AuthController : ApiControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly ISignUpService _signUpService;
         private readonly ISignInService _signInService;
@@ -27,39 +26,39 @@ namespace WebApi.Controllers.ClientApi
         }
 
         [HttpPost("signup")]
-        public async Task<ActionResult<SignUpResponse>> SignUp(
+        public async Task<ActionResult> SignUp(
             [FromBody] SignUpRequest request
         )
         {
-            var result = await _signUpService.SignUpAsync(request);
-            return ToActionResult(result);
+            await _signUpService.SignUpAsync(request);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPost("signin")]
-        public async Task<ActionResult<SignInResponse>> SignIn(
+        public async Task<ActionResult> SignIn(
             [FromBody] SignInRequest request
         )
         {
             var result = await _signInService.SignInAsync(request);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpPost("forgot-password")]
-        public async Task<ActionResult<WriteResponse>> ForgotPassword(
+        public async Task<ActionResult> ForgotPassword(
             [FromBody] ForgotPasswordRequest request
         )
         {
-            var result = await _forgotPasswordService.ForgotPasswordAsync(request);
-            return ToActionResult(result);
+            await _forgotPasswordService.ForgotPasswordAsync(request);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPost("reset-password")]
-        public async Task<ActionResult<WriteResponse>> ResetPassword(
+        public async Task<ActionResult> ResetPassword(
             [FromBody] ResetPasswordRequest request
         )
         {
-            var result = await _forgotPasswordService.ResetPasswordAsync(request);
-            return ToActionResult(result);
+            await _forgotPasswordService.ResetPasswordAsync(request);
+            return Ok(WriteResponse.Success());
         }
     }
 }

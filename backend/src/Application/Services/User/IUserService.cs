@@ -1,5 +1,4 @@
-﻿using Application.Contracts.Common;
-using Application.Contracts.Users.Requests;
+﻿using Application.Contracts.Users.Requests;
 using Application.Contracts.Users.Responses;
 using Domain;
 
@@ -7,23 +6,23 @@ namespace Application.Services.User
 {
     public interface IUserService
     {
-        Task<ReadResponse<UserResponse>> GetByIdAsync(Guid userId);
-        Task<ReadResponse<PageResult<UserListItemResponse>>> GetAllAsync(
+        Task<UserResponse> GetByIdAsync(Guid userId);
+        Task<PageResult<UserListItemResponse>> GetAllAsync(
             string? keyWord,
             int currentPage,
             int pageSize
         );
-        Task<WriteResponse> CreateAsync(CreateUserRequest request);
+        Task CreateAsync(CreateUserRequest request);
 
-        Task<WriteResponse> UpdateAsync(Guid id, UpdateUserRequest request);
+        Task UpdateAsync(Guid id, UpdateUserRequest request);
 
-        Task<WriteResponse> DeleteAsync(List<Guid> ids);
+        Task DeleteAsync(List<Guid> ids);
 
-        Task<WriteResponse> ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request);
+        Task ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request);
 
-        Task<WriteResponse> SetPasswordAsync(Guid id, SetPasswordRequest request);
+        Task SetPasswordAsync(Guid id, SetPasswordRequest request);
 
-        Task<WriteResponse> ChangeEmailAsync(Guid id, ChangeEmailRequest request);
-        Task<WriteResponse> AssignRolesToUserAsync(Guid id, string[] roles);
+        Task ChangeEmailAsync(Guid id, ChangeEmailRequest request);
+        Task AssignRolesToUserAsync(Guid id, string[] roles);
     }
 }

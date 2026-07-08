@@ -1,8 +1,8 @@
 using Application.Constants;
 using Application.Contracts.Auth.Requests;
-using Application.Contracts.Auth.Responses;
 using AutoMapper;
 using Domain.Constants;
+using static Application.Exceptions.CustomException;
 using Microsoft.AspNetCore.Identity;
 using AppUser = Domain.Cores.Identity.User;
 
@@ -19,11 +19,11 @@ namespace Application.Services.Auth
             _mapper = mapper;
         }
 
-        public async Task<SignUpResponse> SignUpAsync(SignUpRequest request)
+        public async Task SignUpAsync(SignUpRequest request)
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
-                return SignUpResponse.Failure(ErrorMessages.User.UserAlreadyExists);
+                throw new BadRequestException(ErrorMessages.User.UserAlreadyExists);
 
             var user = _mapper.Map<SignUpRequest, AppUser>(request);
             user.UserName = user.Email;
@@ -31,19 +31,11 @@ namespace Application.Services.Auth
 
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
-                return SignUpResponse.Failure(
-                    ErrorMessages.User.CreateFailed,
-                    string.Join(" | ", result.Errors.Select(e => e.Description))
-                );
+                throw new BadRequestException(ErrorMessages.User.CreateFailed);
 
             var addRole = await _userManager.AddToRoleAsync(user, Roles.User);
             if (!addRole.Succeeded)
-                return SignUpResponse.Failure(
-                    ErrorMessages.Auth.FailedToAssignRole,
-                    string.Join(" | ", addRole.Errors.Select(e => e.Description))
-                );
-
-            return SignUpResponse.Success();
+                throw new BadRequestException(ErrorMessages.Auth.FailedToAssignRole);
         }
     }
 }

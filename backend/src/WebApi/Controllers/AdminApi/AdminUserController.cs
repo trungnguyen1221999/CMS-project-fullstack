@@ -1,9 +1,7 @@
 ﻿using Application.Constants;
 using Application.Contracts.Common;
 using Application.Contracts.Users.Requests;
-using Application.Contracts.Users.Responses;
 using Application.Services.User;
-using Domain;
 using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +12,7 @@ namespace WebApi.Controllers.AdminApi
     [Route("api/admin/users")]
     [ApiController]
     [Authorize]
-    public class AdminUserController : ApiControllerBase
+    public class AdminUserController : ControllerBase
     {
         private readonly IUserService _userService;
 
@@ -25,7 +23,7 @@ namespace WebApi.Controllers.AdminApi
 
         [HttpGet]
         [HasPermission(Permissions.Users.View)]
-        public async Task<ActionResult<ReadResponse<PageResult<UserListItemResponse>>>> GetAllUsers(
+        public async Task<ActionResult> GetAllUsers(
             [FromQuery] string? keyWord,
             [FromQuery] int currentPage = 1,
             [FromQuery] int pageSize = 10
@@ -37,25 +35,25 @@ namespace WebApi.Controllers.AdminApi
 
         [HttpGet("{id}")]
         [HasPermission(Permissions.Users.View)]
-        public async Task<ActionResult<ReadResponse<UserResponse>>> GetUserById([FromRoute] Guid id)
+        public async Task<ActionResult> GetUserById([FromRoute] Guid id)
         {
             var result = await _userService.GetByIdAsync(id);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpPost]
         [HasPermission(Permissions.Users.Create)]
-        public async Task<ActionResult<WriteResponse>> CreateUser(
+        public async Task<ActionResult> CreateUser(
             [FromBody] CreateUserRequest request
         )
         {
-            var result = await _userService.CreateAsync(request);
-            return ToActionResult(result);
+            await _userService.CreateAsync(request);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("{id}")]
         [HasPermission(Permissions.Users.Edit)]
-        public async Task<ActionResult<WriteResponse>> UpdateUser(
+        public async Task<ActionResult> UpdateUser(
             [FromRoute] Guid id,
             [FromBody] UpdateUserRequest? request
         )
@@ -63,49 +61,49 @@ namespace WebApi.Controllers.AdminApi
             if (request == null)
                 return BadRequest(WriteResponse.Failure(ErrorMessages.Common.InvalidRequest));
 
-            var result = await _userService.UpdateAsync(id, request);
-            return ToActionResult(result);
+            await _userService.UpdateAsync(id, request);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpDelete]
         [HasPermission(Permissions.Users.Delete)]
-        public async Task<ActionResult<WriteResponse>> DeleteUsers([FromBody] List<Guid> ids)
+        public async Task<ActionResult> DeleteUsers([FromBody] List<Guid> ids)
         {
-            var result = await _userService.DeleteAsync(ids);
-            return ToActionResult(result);
+            await _userService.DeleteAsync(ids);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("{id}/set-password")]
         [HasPermission(Permissions.Users.Edit)]
-        public async Task<ActionResult<WriteResponse>> SetPassword(
+        public async Task<ActionResult> SetPassword(
             [FromRoute] Guid id,
             [FromBody] SetPasswordRequest request
         )
         {
-            var result = await _userService.SetPasswordAsync(id, request);
-            return ToActionResult(result);
+            await _userService.SetPasswordAsync(id, request);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("{id}/change-email")]
         [HasPermission(Permissions.Users.Edit)]
-        public async Task<ActionResult<WriteResponse>> ChangeEmail(
+        public async Task<ActionResult> ChangeEmail(
             [FromRoute] Guid id,
             [FromBody] ChangeEmailRequest request
         )
         {
-            var result = await _userService.ChangeEmailAsync(id, request);
-            return ToActionResult(result);
+            await _userService.ChangeEmailAsync(id, request);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("{id}/assign-roles")]
         [HasPermission(Permissions.Users.Edit)]
-        public async Task<ActionResult<WriteResponse>> AssignRolesToUser(
+        public async Task<ActionResult> AssignRolesToUser(
             [FromRoute] Guid id,
             [FromBody] string[] roles
         )
         {
-            var result = await _userService.AssignRolesToUserAsync(id, roles);
-            return ToActionResult(result);
+            await _userService.AssignRolesToUserAsync(id, roles);
+            return Ok(WriteResponse.Success());
         }
     }
 }

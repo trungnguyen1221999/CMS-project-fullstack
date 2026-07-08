@@ -5,7 +5,7 @@ namespace Application.Constants
         public static class Common
         {
             public const string InvalidRequest = "INVALID_REQUEST";
-            public const string NotFoundSuffix = "NOT_FOUND";
+            public const string InternalServerError = "INTERNAL_SERVER_ERROR";
         }
 
         public static class User
@@ -45,6 +45,7 @@ namespace Application.Constants
         public static class Category
         {
             public const string CategoryNotFound = "CATEGORY_NOT_FOUND";
+            public const string InsufficientPermissions = "INSUFFICIENT_CATEGORY_PERMISSIONS";
         }
 
         public static class Auth

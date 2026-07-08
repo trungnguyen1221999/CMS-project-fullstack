@@ -1,4 +1,4 @@
-﻿using Application.Contracts.Users.Responses;
+using Application.Contracts.Users.Responses;
 using Domain;
 using Moq;
 
@@ -6,12 +6,9 @@ namespace Application.Tests.User.Tests
 {
     public partial class UserServiceTest
     {
-        //Happy case
-
         [Fact]
         public async Task GetAllAsync_WithData_ReturnSuccess()
         {
-            //1. Arrange
             var testInput = new
             {
                 KeyWord = "test",
@@ -40,24 +37,19 @@ namespace Application.Tests.User.Tests
                 )
                 .ReturnsAsync(pageResult);
 
-            //2. Act
             var result = await _userService.GetAllAsync(
                 testInput.KeyWord,
                 testInput.CurrentPage,
                 testInput.PageSize
             );
 
-            //3 . Assert
-            Assert.NotNull(result.Data);
-            Assert.True(result.IsSuccess);
-            Assert.Single(result.Data.Result);
+            Assert.NotNull(result);
+            Assert.Single(result.Result);
         }
 
-        //Edge case: No data found
         [Fact]
         public async Task GetAllAsync_NoData_ReturnsEmptyResult()
         {
-            //1. Arrange
             var testInput = new
             {
                 KeyWord = "test",
@@ -83,17 +75,14 @@ namespace Application.Tests.User.Tests
                 )
                 .ReturnsAsync(pageResult);
 
-            //2. Act
             var result = await _userService.GetAllAsync(
                 testInput.KeyWord,
                 testInput.CurrentPage,
                 testInput.PageSize
             );
 
-            //3 . Assert
-            Assert.NotNull(result.Data);
-            Assert.True(result.IsSuccess);
-            Assert.Empty(result.Data.Result);
+            Assert.NotNull(result);
+            Assert.Empty(result.Result);
         }
     }
 }

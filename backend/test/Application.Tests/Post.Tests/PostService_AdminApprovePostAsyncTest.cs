@@ -1,8 +1,10 @@
-using System.Linq.Expressions;
 using Application.Constants;
+using Application.Exceptions;
+using System.Linq.Expressions;
 using Domain.Cores.Content;
 using Moq;
 using Test.Shared.Helpers;
+using static Application.Exceptions.CustomException;
 using AppPost = Domain.Cores.Content.Post;
 using AppUser = Domain.Cores.Identity.User;
 
@@ -13,7 +15,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminApprovePostAsync_PostNotFound_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
 
@@ -21,18 +22,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            // Act
-            var result = await _adminPostService.ApprovePostAsync(postId, userId, "approved");
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.ApprovePostAsync(postId, userId, "approved")
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminApprovePostAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var post = CreateFakePost(postId, Guid.NewGuid(), PostStatus.WaitingForApproval);
@@ -45,18 +43,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
                 .ReturnsAsync((AppUser?)null);
 
-            // Act
-            var result = await _adminPostService.ApprovePostAsync(postId, userId, "approved");
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.ApprovePostAsync(postId, userId, "approved")
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminApprovePostAsync_Success_ReturnsSuccess()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var post = CreateFakePost(postId, Guid.NewGuid(), PostStatus.WaitingForApproval);
@@ -76,11 +71,8 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(1);
 
-            // Act
-            var result = await _adminPostService.ApprovePostAsync(postId, userId, "approved");
+            await _adminPostService.ApprovePostAsync(postId, userId, "approved");
 
-            // Assert
-            Assert.True(result.IsSuccess);
             _mockUnitOfWork.Verify(x => x.Posts.Approve(post, user, "approved"), Times.Once);
             _mockUnitOfWork.Verify(x => x.CompleteAsync(), Times.Once);
         }
@@ -88,7 +80,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminApprovePostAsync_SaveFails_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var post = CreateFakePost(postId, Guid.NewGuid(), PostStatus.WaitingForApproval);
@@ -108,12 +99,10 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
-            // Act
-            var result = await _adminPostService.ApprovePostAsync(postId, userId, null);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.ApproveFailed, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _adminPostService.ApprovePostAsync(postId, userId, null)
+            );
+            Assert.Equal(ErrorMessages.Post.ApproveFailed, ex.ErrorCode);
         }
     }
 }

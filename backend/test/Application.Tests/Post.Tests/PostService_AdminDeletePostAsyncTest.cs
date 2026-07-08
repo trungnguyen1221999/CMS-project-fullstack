@@ -3,6 +3,7 @@ using Application.Constants;
 using Domain.Cores.Content;
 using Moq;
 using Test.Shared.Helpers;
+using static Application.Exceptions.CustomException;
 using AppPost = Domain.Cores.Content.Post;
 using AppUser = Domain.Cores.Identity.User;
 
@@ -13,7 +14,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminDeletePostAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var ids = new[] { Guid.NewGuid() };
             var userId = Guid.NewGuid();
 
@@ -21,18 +21,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
                 .ReturnsAsync((AppUser?)null);
 
-            // Act
-            var result = await _adminPostService.DeletePostAsync(ids, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.DeletePostAsync(ids, userId)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminDeletePostAsync_PostsNotFound_ReturnsFailure()
         {
-            // Arrange
             var ids = new[] { Guid.NewGuid() };
             var userId = Guid.NewGuid();
             var user = new AppUser { Id = userId, UserName = "admin" };
@@ -47,18 +44,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            // Act
-            var result = await _adminPostService.DeletePostAsync(ids, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.DeletePostAsync(ids, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminDeletePostAsync_PartialPostsFound_ReturnsFailure()
         {
-            // Arrange
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var ids = new[] { id1, id2 };
@@ -76,18 +70,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            // Act
-            var result = await _adminPostService.DeletePostAsync(ids, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.DeletePostAsync(ids, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminDeletePostAsync_NoPermissionAndNotAuthor_ReturnsInsufficientPermission()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var ids = new[] { postId };
             var userId = Guid.NewGuid();
@@ -105,18 +96,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            // Act
-            var result = await _adminPostService.DeletePostAsync(ids, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.InsufficientPostPermission, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<ForbiddenException>(
+                () => _adminPostService.DeletePostAsync(ids, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.InsufficientPostPermission, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminDeletePostAsync_AuthorDeletesOwnPost_ReturnsSuccess()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var ids = new[] { postId };
             var userId = Guid.NewGuid();
@@ -138,11 +126,8 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.PostInSeries.ClearPostFromAllSeries(postId));
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(1);
 
-            // Act
-            var result = await _adminPostService.DeletePostAsync(ids, userId);
+            await _adminPostService.DeletePostAsync(ids, userId);
 
-            // Assert
-            Assert.True(result.IsSuccess);
             _mockUnitOfWork.Verify(
                 x => x.Posts.RemoveRange(It.IsAny<IEnumerable<AppPost>>()),
                 Times.Once
@@ -157,7 +142,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminDeletePostAsync_WithPermission_DeletesOthersPosts()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var ids = new[] { postId };
             var userId = Guid.NewGuid();
@@ -180,17 +164,12 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.PostInSeries.ClearPostFromAllSeries(postId));
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(1);
 
-            // Act
-            var result = await _adminPostService.DeletePostAsync(ids, userId);
-
-            // Assert
-            Assert.True(result.IsSuccess);
+            await _adminPostService.DeletePostAsync(ids, userId);
         }
 
         [Fact]
         public async Task AdminDeletePostAsync_SaveFails_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var ids = new[] { postId };
             var userId = Guid.NewGuid();
@@ -212,12 +191,10 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.PostInSeries.ClearPostFromAllSeries(postId));
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
-            // Act
-            var result = await _adminPostService.DeletePostAsync(ids, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.DeleteFailed, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _adminPostService.DeletePostAsync(ids, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.DeleteFailed, ex.ErrorCode);
         }
     }
 }

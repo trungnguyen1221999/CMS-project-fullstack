@@ -1,15 +1,12 @@
-﻿using Application.Contracts.Common;
-using Application.Contracts.Posts.Request;
-using Application.Contracts.Posts.Response;
+﻿using Application.Contracts.Posts.Request;
 using Application.Services.Post;
-using Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers.ClientApi
 {
     [Route("api/posts")]
     [ApiController]
-    public class PostController : ApiControllerBase
+    public class PostController : ControllerBase
     {
         private readonly IClientPostService _postService;
 
@@ -19,40 +16,37 @@ namespace WebApi.Controllers.ClientApi
         }
 
         [HttpGet]
-        public async Task<
-            ActionResult<ReadResponse<PageResult<PostInListResponse>>>
-        > GetPublishedPosts([FromQuery] PostPagingRequest request)
+        public async Task<ActionResult> GetPublishedPosts([FromQuery] PostPagingRequest request)
         {
             var result = await _postService.GetAllPostsAsync(request);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpGet("category/{categorySlug}")]
-        public async Task<
-            ActionResult<ReadResponse<PageResult<PostInListResponse>>>
-        > GetPostsByCategory([FromRoute] string categorySlug, [FromQuery] PostPagingRequest request)
+        public async Task<ActionResult> GetPostsByCategory(
+            [FromRoute] string categorySlug,
+            [FromQuery] PostPagingRequest request
+        )
         {
             var result = await _postService.GetPostsByCategoryAsync(categorySlug, request);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpGet("tag/{tagSlug}")]
-        public async Task<ActionResult<ReadResponse<PageResult<PostInListResponse>>>> GetPostsByTag(
+        public async Task<ActionResult> GetPostsByTag(
             [FromRoute] string tagSlug,
             [FromQuery] PostPagingRequest request
         )
         {
             var result = await _postService.GetPostsByTagAsync(tagSlug, request);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpGet("{postId}")]
-        public async Task<ActionResult<ReadResponse<PostResponse>>> GetPostById(
-            [FromRoute] Guid postId
-        )
+        public async Task<ActionResult> GetPostById([FromRoute] Guid postId)
         {
             var result = await _postService.GetPostByIdAsync(postId);
-            return ToActionResult(result);
+            return Ok(result);
         }
     }
 }

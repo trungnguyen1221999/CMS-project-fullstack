@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using Test.Shared.Mocks;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.Auth.Tests
@@ -22,8 +23,6 @@ namespace Application.Tests.Auth.Tests
             _signUpService = new SignUpService(_userManagerMock.Object, _mapperMock.Object);
         }
 
-        // ===== HELPERS =====
-
         private static SignUpRequest CreateValidRequest() =>
             new()
             {
@@ -34,9 +33,6 @@ namespace Application.Tests.Auth.Tests
                 ConfirmPassword = "Password123!",
             };
 
-        /// <summary>
-        /// Setup: Email does not exist, Map request to User.
-        /// </summary>
         private AppUser SetupNewUserFlow(SignUpRequest request)
         {
             var user = new AppUser { Email = request.Email };
@@ -50,23 +46,18 @@ namespace Application.Tests.Auth.Tests
             return user;
         }
 
-        // ===== TEST CASES =====
-
         [Fact]
         public async Task SignUpAsync_EmailAlreadyExists_ReturnsErrorUserAlreadyExists()
         {
-            // Arrange
             var request = CreateValidRequest();
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(request.Email))
                 .ReturnsAsync(new AppUser { Email = request.Email });
 
-            // Act
-            var result = await _signUpService.SignUpAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserAlreadyExists, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _signUpService.SignUpAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.UserAlreadyExists, ex.ErrorCode);
             _userManagerMock.Verify(
                 x => x.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
                 Times.Never
@@ -76,7 +67,6 @@ namespace Application.Tests.Auth.Tests
         [Fact]
         public async Task SignUpAsync_CreateUserFailed_ReturnsErrorCreateFailed()
         {
-            // Arrange
             var request = CreateValidRequest();
             SetupNewUserFlow(request);
 
@@ -86,13 +76,10 @@ namespace Application.Tests.Auth.Tests
                     IdentityResult.Failed(new IdentityError { Description = "Password too weak" })
                 );
 
-            // Act
-            var result = await _signUpService.SignUpAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.CreateFailed, result.ErrorCode);
-            Assert.Contains("Password too weak", result.ErrorMessage);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _signUpService.SignUpAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.CreateFailed, ex.ErrorCode);
             _userManagerMock.Verify(
                 x => x.AddToRoleAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
                 Times.Never
@@ -102,7 +89,6 @@ namespace Application.Tests.Auth.Tests
         [Fact]
         public async Task SignUpAsync_AddToRoleFailed_ReturnsErrorFailedToAssignRole()
         {
-            // Arrange
             var request = CreateValidRequest();
             var user = SetupNewUserFlow(request);
 
@@ -116,19 +102,15 @@ namespace Application.Tests.Auth.Tests
                     IdentityResult.Failed(new IdentityError { Description = "Role does not exist" })
                 );
 
-            // Act
-            var result = await _signUpService.SignUpAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Auth.FailedToAssignRole, result.ErrorCode);
-            Assert.Contains("Role does not exist", result.ErrorMessage);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _signUpService.SignUpAsync(request)
+            );
+            Assert.Equal(ErrorMessages.Auth.FailedToAssignRole, ex.ErrorCode);
         }
 
         [Fact]
         public async Task SignUpAsync_Success_ReturnsIsSuccessTrue()
         {
-            // Arrange
             var request = CreateValidRequest();
             var user = SetupNewUserFlow(request);
 
@@ -140,13 +122,10 @@ namespace Application.Tests.Auth.Tests
                 .Setup(x => x.AddToRoleAsync(user, "User"))
                 .ReturnsAsync(IdentityResult.Success);
 
-            // Act
-            var result = await _signUpService.SignUpAsync(request);
+            await _signUpService.SignUpAsync(request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Null(result.ErrorCode);
-            Assert.Null(result.ErrorMessage);
+            _userManagerMock.Verify(x => x.CreateAsync(user, request.Password), Times.Once);
+            _userManagerMock.Verify(x => x.AddToRoleAsync(user, "User"), Times.Once);
         }
     }
 }

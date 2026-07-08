@@ -1,7 +1,8 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Users.Requests;
 using Microsoft.AspNetCore.Identity;
 using Moq;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.User.Tests
@@ -23,19 +24,17 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task UpdateAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var request = UpdateUserRequest();
             var userId = Guid.NewGuid();
             _userManagerMock
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
                 .ReturnsAsync((AppUser?)null);
-            // Act
-            var result = await _userService.UpdateAsync(userId, request);
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
 
-            //Verify
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _userService.UpdateAsync(userId, request)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
+
             _mapperMock.Verify(x => x.Map(request, It.IsAny<AppUser>()), Times.Never);
             _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
         }
@@ -43,7 +42,6 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task UpdateAsync_UserFoundButUpdateFails_ReturnsFailure()
         {
-            // Arrange
             var request = UpdateUserRequest();
             var userId = Guid.NewGuid();
             var existingUser = new AppUser();
@@ -53,14 +51,11 @@ namespace Application.Tests.User.Tests
                 .Setup(x => x.UpdateAsync(existingUser))
                 .ReturnsAsync(IdentityResult.Failed());
 
-            // Act
-            var result = await _userService.UpdateAsync(userId, request);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _userService.UpdateAsync(userId, request)
+            );
+            Assert.Equal(ErrorMessages.User.UpdateFailed, ex.ErrorCode);
 
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UpdateFailed, result.ErrorCode);
-
-            // Verify
             _mapperMock.Verify(x => x.Map(request, existingUser), Times.Once);
             _userManagerMock.Verify(x => x.UpdateAsync(existingUser), Times.Once);
         }
@@ -68,7 +63,6 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task UpdateAsync_UserFoundAndUpdateSuccess_ReturnsSuccess()
         {
-            // Arrange
             var request = UpdateUserRequest();
             var userId = Guid.NewGuid();
             var existingUser = new AppUser();
@@ -78,14 +72,8 @@ namespace Application.Tests.User.Tests
                 .Setup(x => x.UpdateAsync(existingUser))
                 .ReturnsAsync(IdentityResult.Success);
 
-            // Act
-            var result = await _userService.UpdateAsync(userId, request);
+            await _userService.UpdateAsync(userId, request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Null(result.ErrorCode);
-
-            // Verify
             _mapperMock.Verify(x => x.Map(request, existingUser), Times.Once);
             _userManagerMock.Verify(x => x.UpdateAsync(existingUser), Times.Once);
         }

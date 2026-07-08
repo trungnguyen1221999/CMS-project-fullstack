@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
+using Domain.Commons;
 using Domain.Cores.Content;
 
 namespace Application.Contracts.Posts.Response
 {
-    public class PostResponse
+    public class PostResponse : AuditableEntity
     {
         public Guid CategoryId { get; set; }
 

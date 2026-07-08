@@ -1,4 +1,4 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Auth.Requests;
 using Application.Services.Auth;
 using Application.Services.Token;
@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Test.Shared.Mocks;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.Auth.Tests
@@ -58,75 +59,56 @@ namespace Application.Tests.Auth.Tests
             _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
         }
 
-        // ── Happy Path ──
-
         [Fact]
         public async Task SignInAsync_ValidCredentials_ReturnsSuccessWithTokens()
         {
-            // Arrange
             var request = CreateValidRequest();
             var user = SetupUserExist(request);
             SetupSuccessfulSignIn(user, request);
 
-            // Act
             var result = await _signInService.SignInAsync(request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
             Assert.Equal("mocked_token", result.Token);
             Assert.Equal("mocked_refresh_token", result.RefreshToken);
         }
 
-        // ── User Not Found ──
-
         [Fact]
         public async Task SignInAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidRequest();
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(request.Email))
                 .ReturnsAsync((AppUser?)null);
 
-            // Act
-            var result = await _signInService.SignInAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _signInService.SignInAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
             _signInManagerMock.Verify(
                 x => x.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), false),
                 Times.Never
             );
         }
 
-        // ── Invalid Password ──
-
         [Fact]
         public async Task SignInAsync_InvalidPassword_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidRequest();
             var user = SetupUserExist(request);
             _signInManagerMock
                 .Setup(x => x.CheckPasswordSignInAsync(user, request.Password, false))
                 .ReturnsAsync(SignInResult.Failed);
 
-            // Act
-            var result = await _signInService.SignInAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Auth.InvalidPassword, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _signInService.SignInAsync(request)
+            );
+            Assert.Equal(ErrorMessages.Auth.InvalidPassword, ex.ErrorCode);
             _tokenServiceMock.Verify(x => x.GenerateAccessToken(It.IsAny<AppUser>()), Times.Never);
         }
-
-        // ── Update User Failed ──
 
         [Fact]
         public async Task SignInAsync_UpdateUserFails_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidRequest();
             var user = SetupUserExist(request);
             _signInManagerMock
@@ -140,29 +122,21 @@ namespace Application.Tests.Auth.Tests
                     IdentityResult.Failed(new IdentityError { Description = "DB error" })
                 );
 
-            // Act
-            var result = await _signInService.SignInAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UpdateFailed, result.ErrorCode);
-            Assert.Contains("DB error", result.ErrorMessage);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _signInService.SignInAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.UpdateFailed, ex.ErrorCode);
         }
-
-        // ── Verify RefreshToken Saved ──
 
         [Fact]
         public async Task SignInAsync_Success_SetsRefreshTokenOnUser()
         {
-            // Arrange
             var request = CreateValidRequest();
             var user = SetupUserExist(request);
             SetupSuccessfulSignIn(user, request);
 
-            // Act
             await _signInService.SignInAsync(request);
 
-            // Assert
             Assert.Equal("mocked_refresh_token", user.RefreshToken);
             Assert.True(user.IsActive);
             Assert.NotNull(user.RefreshTokenExpiryTime);

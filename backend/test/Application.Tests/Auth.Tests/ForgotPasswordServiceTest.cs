@@ -5,6 +5,7 @@ using Application.Services.Otp;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using Test.Shared.Mocks;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.Auth.Tests
@@ -24,8 +25,6 @@ namespace Application.Tests.Auth.Tests
                 _emailServiceMock.Object
             );
         }
-
-        // ===== HELPERS =====
 
         private static ForgotPasswordRequest CreateForgotRequest(string email = "test@example.com") =>
             new() { Email = email };
@@ -59,79 +58,61 @@ namespace Application.Tests.Auth.Tests
                 .ReturnsAsync((AppUser?)null);
         }
 
-        // ===== ForgotPasswordAsync TESTS =====
-
         [Fact]
         public async Task ForgotPasswordAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var request = CreateForgotRequest();
             SetupUserNotFound(request.Email);
 
-            // Act
-            var result = await _forgotPasswordService.ForgotPasswordAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _forgotPasswordService.ForgotPasswordAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
             _emailServiceMock.Verify(x => x.SendOtpAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
         public async Task ForgotPasswordAsync_UserFound_SendsOtpAndReturnsSuccess()
         {
-            // Arrange
             var request = CreateForgotRequest();
             SetupUserFound(request.Email);
             _emailServiceMock.Setup(x => x.SendOtpAsync(request.Email)).Returns(Task.CompletedTask);
 
-            // Act
-            var result = await _forgotPasswordService.ForgotPasswordAsync(request);
+            await _forgotPasswordService.ForgotPasswordAsync(request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
             _emailServiceMock.Verify(x => x.SendOtpAsync(request.Email), Times.Once);
         }
-
-        // ===== ResetPasswordAsync TESTS =====
 
         [Fact]
         public async Task ResetPasswordAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var request = CreateResetRequest();
             SetupUserNotFound(request.Email);
 
-            // Act
-            var result = await _forgotPasswordService.ResetPasswordAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _forgotPasswordService.ResetPasswordAsync(request)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task ResetPasswordAsync_InvalidOtp_ReturnsCodeInvalid()
         {
-            // Arrange
             var request = CreateResetRequest();
             SetupUserFound(request.Email);
             _emailServiceMock
                 .Setup(x => x.ValidateOtpAsync(request.Email, request.Code))
                 .ReturnsAsync(false);
 
-            // Act
-            var result = await _forgotPasswordService.ResetPasswordAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Auth.CodeInvalid, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _forgotPasswordService.ResetPasswordAsync(request)
+            );
+            Assert.Equal(ErrorMessages.Auth.CodeInvalid, ex.ErrorCode);
         }
 
         [Fact]
         public async Task ResetPasswordAsync_ResetFailed_ReturnsResetPasswordFailed()
         {
-            // Arrange
             var request = CreateResetRequest();
             var user = SetupUserFound(request.Email);
             _emailServiceMock
@@ -144,19 +125,15 @@ namespace Application.Tests.Auth.Tests
                 .Setup(x => x.ResetPasswordAsync(user, "reset-token", request.NewPassword))
                 .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Too weak" }));
 
-            // Act
-            var result = await _forgotPasswordService.ResetPasswordAsync(request);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Auth.ResetPasswordFailed, result.ErrorCode);
-            Assert.Contains("Too weak", result.ErrorMessage);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _forgotPasswordService.ResetPasswordAsync(request)
+            );
+            Assert.Equal(ErrorMessages.Auth.ResetPasswordFailed, ex.ErrorCode);
         }
 
         [Fact]
         public async Task ResetPasswordAsync_ValidOtp_ReturnsSuccessAndRemovesOtp()
         {
-            // Arrange
             var request = CreateResetRequest();
             var user = SetupUserFound(request.Email);
             _emailServiceMock
@@ -172,11 +149,8 @@ namespace Application.Tests.Auth.Tests
                 .Setup(x => x.RemoveOtpAsync(request.Email))
                 .Returns(Task.CompletedTask);
 
-            // Act
-            var result = await _forgotPasswordService.ResetPasswordAsync(request);
+            await _forgotPasswordService.ResetPasswordAsync(request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
             _emailServiceMock.Verify(x => x.RemoveOtpAsync(request.Email), Times.Once);
         }
     }

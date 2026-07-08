@@ -1,7 +1,8 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Users.Requests;
 using Microsoft.AspNetCore.Identity;
 using Moq;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.User.Tests
@@ -24,17 +25,14 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task ChangeEmailAsync_UserNotFound_ReturnFailure()
         {
-            //Arrange
             var id = Guid.NewGuid();
             var request = CreateChangeEmailRequest();
             SetupFindUser(id, null);
 
-            //Act
-            var result = await _userService.ChangeEmailAsync(id, request);
-
-            //Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _userService.ChangeEmailAsync(id, request)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
             _userManagerMock.Verify(
                 x => x.GenerateChangeEmailTokenAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
                 Times.Never
@@ -44,7 +42,6 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task ChangeEmailAsync_ChangeEmailFailed_ReturnFailure()
         {
-            //Arrange
             var id = Guid.NewGuid();
             var user = CreateUserForSetPassword(id);
             var request = CreateChangeEmailRequest();
@@ -55,19 +52,15 @@ namespace Application.Tests.User.Tests
                 IdentityResult.Failed(new IdentityError { Description = "Email change error" })
             );
 
-            //Act
-            var result = await _userService.ChangeEmailAsync(id, request);
-
-            //Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.ChangeEmailFailed, result.ErrorCode);
-            Assert.Contains("Email change error", result.ErrorMessage);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _userService.ChangeEmailAsync(id, request)
+            );
+            Assert.Equal(ErrorMessages.User.ChangeEmailFailed, ex.ErrorCode);
         }
 
         [Fact]
         public async Task ChangeEmailAsync_ValidRequest_ReturnSuccess()
         {
-            //Arrange
             var id = Guid.NewGuid();
             var user = CreateUserForSetPassword(id);
             var request = CreateChangeEmailRequest();
@@ -76,11 +69,8 @@ namespace Application.Tests.User.Tests
             SetupGenerateChangeEmailToken(user, request.Email, token);
             SetupChangeEmail(user, request.Email, token, IdentityResult.Success);
 
-            //Act
-            var result = await _userService.ChangeEmailAsync(id, request);
+            await _userService.ChangeEmailAsync(id, request);
 
-            //Assert
-            Assert.True(result.IsSuccess);
             _userManagerMock.Verify(
                 x => x.ChangeEmailAsync(user, request.Email, token),
                 Times.Once

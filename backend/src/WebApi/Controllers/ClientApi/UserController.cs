@@ -10,7 +10,7 @@ namespace WebApi.Controllers.ClientApi
     [Route("api/users")]
     [ApiController]
     [Authorize]
-    public class UserController : ApiControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
 
@@ -20,13 +20,13 @@ namespace WebApi.Controllers.ClientApi
         }
 
         [HttpPut("change-password")]
-        public async Task<ActionResult<WriteResponse>> ChangeMyPassword(
+        public async Task<ActionResult> ChangeMyPassword(
             [FromBody] ChangeMyPasswordRequest request
         )
         {
             var userId = User.GetUserId();
-            var result = await _userService.ChangeMyPasswordAsync(userId, request);
-            return ToActionResult(result);
+            await _userService.ChangeMyPasswordAsync(userId, request);
+            return Ok(WriteResponse.Success());
         }
     }
 }

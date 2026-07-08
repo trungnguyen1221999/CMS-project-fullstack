@@ -3,6 +3,7 @@ using Application.Constants;
 using Domain.Cores.Content;
 using Moq;
 using Test.Shared.Helpers;
+using static Application.Exceptions.CustomException;
 using AppPost = Domain.Cores.Content.Post;
 
 namespace Application.Tests.Post.Tests
@@ -12,7 +13,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminUpdatePostAsync_PostNotFound_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidCreateUpdatePostRequest();
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
@@ -21,18 +21,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            // Act
-            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminUpdatePostAsync_SlugAlreadyExists_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidCreateUpdatePostRequest();
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
@@ -50,18 +47,15 @@ namespace Application.Tests.Post.Tests
                     return new List<AppPost> { otherPost }.BuildMockQueryable();
                 });
 
-            // Act
-            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.SlugAlreadyExists, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.SlugAlreadyExists, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminUpdatePostAsync_CategoryNotFound_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidCreateUpdatePostRequest();
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
@@ -84,18 +78,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>()))
                 .Returns(new List<PostCategory>().BuildMockQueryable());
 
-            // Act
-            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Category.CategoryNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            );
+            Assert.Equal(ErrorMessages.Category.CategoryNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AdminUpdatePostAsync_Success_ReturnsSuccess()
         {
-            // Arrange
             var request = CreateValidCreateUpdatePostRequest();
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
@@ -132,11 +123,8 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(1);
 
-            // Act
-            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
+            await _adminPostService.UpdatePostAsync(request, postId, userId);
 
-            // Assert
-            Assert.True(result.IsSuccess);
             _mockUnitOfWork.Verify(x => x.PostTags.ClearAllTagsFromPost(postId), Times.Once);
             _mockUnitOfWork.Verify(x => x.CompleteAsync(), Times.Once);
         }
@@ -144,7 +132,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminUpdatePostAsync_SaveFails_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidCreateUpdatePostRequest();
             var postId = Guid.NewGuid();
             var userId = Guid.NewGuid();
@@ -183,12 +170,10 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.Tags.Add(It.IsAny<Tag>()));
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
-            // Act
-            var result = await _adminPostService.UpdatePostAsync(request, postId, userId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.UpdatePostFailed, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            );
+            Assert.Equal(ErrorMessages.Post.UpdatePostFailed, ex.ErrorCode);
         }
     }
 }

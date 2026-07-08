@@ -6,6 +6,7 @@ using Domain;
 using Domain.Cores.Content;
 using Moq;
 using Test.Shared.Helpers;
+using static Application.Exceptions.CustomException;
 using AppPost = Domain.Cores.Content.Post;
 
 namespace Application.Tests.Post.Tests
@@ -15,7 +16,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task ClientGetAllPostsAsync_ReturnsSuccess()
         {
-            // Arrange
             var request = new PostPagingRequest { CurrentPage = 1, PageSize = 10 };
             var fakePageResult = new PageResult<PostInListResponse>
             {
@@ -29,37 +29,30 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.GetPublishedPostsAsync(request))
                 .ReturnsAsync(fakePageResult);
 
-            // Act
             var result = await _clientPostService.GetAllPostsAsync(request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(1, result.Data!.TotalCount);
+            Assert.Equal(1, result.TotalCount);
             _mockUnitOfWork.Verify(x => x.Posts.GetPublishedPostsAsync(request), Times.Once);
         }
 
         [Fact]
         public async Task ClientGetPostByIdAsync_PostNotFound_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            // Act
-            var result = await _clientPostService.GetPostByIdAsync(postId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _clientPostService.GetPostByIdAsync(postId)
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task ClientGetPostByIdAsync_PostNotPublished_ReturnsFailure()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var post = CreateFakePost(postId, Guid.NewGuid(), PostStatus.Draft);
 
@@ -67,18 +60,15 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            // Act
-            var result = await _clientPostService.GetPostByIdAsync(postId);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.Post.PostNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _clientPostService.GetPostByIdAsync(postId)
+            );
+            Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
 
         [Fact]
         public async Task ClientGetPostByIdAsync_PublishedPost_ReturnsSuccess()
         {
-            // Arrange
             var postId = Guid.NewGuid();
             var post = CreateFakePost(postId, Guid.NewGuid(), PostStatus.Published);
             var postResponse = new PostResponse { AuthorUserId = post.AuthorUserId };
@@ -89,18 +79,14 @@ namespace Application.Tests.Post.Tests
 
             _mockMapper.Setup(x => x.Map<AppPost, PostResponse>(post)).Returns(postResponse);
 
-            // Act
             var result = await _clientPostService.GetPostByIdAsync(postId);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Data);
+            Assert.NotNull(result);
         }
 
         [Fact]
         public async Task ClientGetPostsByCategoryAsync_ReturnsSuccess()
         {
-            // Arrange
             var categorySlug = "tech";
             var request = new PostPagingRequest { CurrentPage = 1, PageSize = 10 };
             var fakePageResult = new PageResult<PostInListResponse>
@@ -119,12 +105,9 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.GetPostsByCategoryAsync(categorySlug, request))
                 .ReturnsAsync(fakePageResult);
 
-            // Act
             var result = await _clientPostService.GetPostsByCategoryAsync(categorySlug, request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(2, result.Data!.TotalCount);
+            Assert.Equal(2, result.TotalCount);
             _mockUnitOfWork.Verify(
                 x => x.Posts.GetPostsByCategoryAsync(categorySlug, request),
                 Times.Once
@@ -134,7 +117,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task ClientGetPostsByTagAsync_ReturnsSuccess()
         {
-            // Arrange
             var tagSlug = "csharp";
             var request = new PostPagingRequest { CurrentPage = 1, PageSize = 10 };
             var fakePageResult = new PageResult<PostInListResponse>
@@ -149,12 +131,9 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.GetPostsByTagAsync(tagSlug, request))
                 .ReturnsAsync(fakePageResult);
 
-            // Act
             var result = await _clientPostService.GetPostsByTagAsync(tagSlug, request);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(1, result.Data!.TotalCount);
+            Assert.Equal(1, result.TotalCount);
             _mockUnitOfWork.Verify(x => x.Posts.GetPostsByTagAsync(tagSlug, request), Times.Once);
         }
     }

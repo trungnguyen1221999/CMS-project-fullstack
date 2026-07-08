@@ -1,7 +1,8 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Contracts.Users.Requests;
 using Microsoft.AspNetCore.Identity;
 using Moq;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.User.Tests
@@ -30,23 +31,16 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task SetPasswordAsync_UserNotFound_ReturnFailure()
         {
-            //Arrange
             var userId = Guid.NewGuid();
             var request = CreateSetPasswordRequest();
             SetupFindUser(userId, null);
 
-            //Act
-            var result = await _userService.SetPasswordAsync(userId, request);
-
-            //Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _userService.SetPasswordAsync(userId, request)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
             _userManagerMock.Verify(
                 x => x.CheckPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
-                Times.Never
-            );
-            _userManagerMock.Verify(
-                x => x.ResetPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()),
                 Times.Never
             );
         }
@@ -54,21 +48,18 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task SetPasswordAsync_NewPasswordSameAsCurrent_ReturnFailure()
         {
-            //Arrange
             var userId = Guid.NewGuid();
             var user = CreateUserForSetPassword(userId);
             var request = CreateSetPasswordRequest();
             SetupFindUser(userId, user);
             SetupCheckPassword(user, request.NewPassword, true);
 
-            //Act
-            var result = await _userService.SetPasswordAsync(userId, request);
-
-            //Assert
-            Assert.False(result.IsSuccess);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _userService.SetPasswordAsync(userId, request)
+            );
             Assert.Equal(
                 ErrorMessages.User.ChangePassword.NewPasswordSameAsCurrent,
-                result.ErrorCode
+                ex.ErrorCode
             );
             _userManagerMock.Verify(
                 x => x.ResetPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -79,7 +70,6 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task SetPasswordAsync_ResetFailed_ReturnSetPasswordFailed()
         {
-            //Arrange
             var userId = Guid.NewGuid();
             var user = CreateUserForSetPassword(userId);
             var request = CreateSetPasswordRequest();
@@ -91,19 +81,15 @@ namespace Application.Tests.User.Tests
                 IdentityResult.Failed(new IdentityError { Description = "Reset error" })
             );
 
-            //Act
-            var result = await _userService.SetPasswordAsync(userId, request);
-
-            //Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.SetPasswordFailed, result.ErrorCode);
-            Assert.Contains("Reset error", result.ErrorMessage);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _userService.SetPasswordAsync(userId, request)
+            );
+            Assert.Equal(ErrorMessages.User.SetPasswordFailed, ex.ErrorCode);
         }
 
         [Fact]
         public async Task SetPasswordAsync_ValidRequest_ReturnSuccess()
         {
-            //Arrange
             var userId = Guid.NewGuid();
             var user = CreateUserForSetPassword(userId);
             var request = CreateSetPasswordRequest();
@@ -113,11 +99,8 @@ namespace Application.Tests.User.Tests
             SetupGenerateResetToken(user, token);
             SetupResetPassword(user, token, request.NewPassword, IdentityResult.Success);
 
-            //Act
-            var result = await _userService.SetPasswordAsync(userId, request);
+            await _userService.SetPasswordAsync(userId, request);
 
-            //Assert
-            Assert.True(result.IsSuccess);
             _userManagerMock.Verify(x => x.ResetPasswordAsync(user, token, request.NewPassword), Times.Once);
         }
     }

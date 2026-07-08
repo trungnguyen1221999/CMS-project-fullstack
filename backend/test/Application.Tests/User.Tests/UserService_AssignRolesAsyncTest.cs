@@ -1,6 +1,7 @@
 using Application.Constants;
 using Microsoft.AspNetCore.Identity;
 using Moq;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.User.Tests
@@ -19,17 +20,14 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task AssignRolesToUserAsync_UserNotFound_ReturnFailure()
         {
-            //Arrange
             var id = Guid.NewGuid();
             var roles = new[] { "Admin", "Editor" };
             SetupFindUser(id, null);
 
-            //Act
-            var result = await _userService.AssignRolesToUserAsync(id, roles);
-
-            //Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _userService.AssignRolesToUserAsync(id, roles)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
             _userManagerMock.Verify(
                 x => x.AddToRolesAsync(It.IsAny<AppUser>(), It.IsAny<IEnumerable<string>>()),
                 Times.Never
@@ -39,7 +37,6 @@ namespace Application.Tests.User.Tests
         [Fact]
         public async Task AssignRolesToUserAsync_AddToRolesFailed_ReturnFailure()
         {
-            //Arrange
             var id = Guid.NewGuid();
             var user = CreateUserForAssignRoles(id);
             var roles = new[] { "Admin", "Editor" };
@@ -53,19 +50,15 @@ namespace Application.Tests.User.Tests
                 IdentityResult.Failed(new IdentityError { Description = "Role error" })
             );
 
-            //Act
-            var result = await _userService.AssignRolesToUserAsync(id, roles);
-
-            //Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.AssignRolesFailed, result.ErrorCode);
-            Assert.Contains("Role error", result.ErrorMessage);
+            var ex = await Assert.ThrowsAsync<BadRequestException>(
+                () => _userService.AssignRolesToUserAsync(id, roles)
+            );
+            Assert.Equal(ErrorMessages.User.AssignRolesFailed, ex.ErrorCode);
         }
 
         [Fact]
         public async Task AssignRolesToUserAsync_ValidRequest_ReturnSuccess()
         {
-            //Arrange
             var id = Guid.NewGuid();
             var user = CreateUserForAssignRoles(id);
             var roles = new[] { "Admin", "Editor" };
@@ -77,11 +70,8 @@ namespace Application.Tests.User.Tests
                 .Returns(Task.CompletedTask);
             SetupAddToRoles(user, roles, IdentityResult.Success);
 
-            //Act
-            var result = await _userService.AssignRolesToUserAsync(id, roles);
+            await _userService.AssignRolesToUserAsync(id, roles);
 
-            //Assert
-            Assert.True(result.IsSuccess);
             _userRepositoryMock.Verify(x => x.RemoveUserFromRoles(id, currentRoles), Times.Once);
             _userManagerMock.Verify(x => x.AddToRolesAsync(user, roles), Times.Once);
         }

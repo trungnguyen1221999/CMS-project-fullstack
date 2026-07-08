@@ -4,6 +4,7 @@ using Application.Contracts.Posts.Response;
 using Domain;
 using Domain.Cores.Content;
 using Moq;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Tests.Post.Tests
@@ -49,22 +50,18 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminGetAllPostsAsync_UserNotFound_ReturnsFailure()
         {
-            // Arrange
             var request = CreateValidGetAllPostsRequest();
-
             var userId = Guid.NewGuid();
+
             _mockUserManager
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
                 .ReturnsAsync((AppUser?)null);
-            // Act
 
-            var result = await _adminPostService.GetAllPostsAsync(request, userId);
-            // Assert
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
+                () => _adminPostService.GetAllPostsAsync(request, userId)
+            );
+            Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
 
-            Assert.False(result.IsSuccess);
-            Assert.Equal(ErrorMessages.User.UserNotFound, result.ErrorCode);
-
-            //Verify
             _mockUserManager.Verify(x => x.FindByIdAsync(userId.ToString()), Times.Once);
             _mockPermissionService.Verify(x => x.HasApprovedPostPermission(userId), Times.Never);
         }
@@ -72,7 +69,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminGetAllPostsAsync_UserHasApprovePermission_ReturnsAllNonDraftPosts()
         {
-            // Arrange
             var userId = Guid.NewGuid();
             var user = new AppUser { Id = userId, Email = "admin@test.com" };
             var request = CreateValidGetAllPostsRequest();
@@ -86,15 +82,11 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.GetAllPostsAsync(request, userId, true))
                 .ReturnsAsync(fakePageResult);
 
-            // Act
             var result = await _adminPostService.GetAllPostsAsync(request, userId);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Data);
-            Assert.Equal(3, result.Data.TotalCount - 1);
+            Assert.NotNull(result);
+            Assert.Equal(3, result.TotalCount - 1);
 
-            // Verify: repo called with hasApprovePostPermission = true
             _mockUnitOfWork.Verify(
                 x => x.Posts.GetAllPostsAsync(request, userId, true),
                 Times.Once
@@ -104,7 +96,6 @@ namespace Application.Tests.Post.Tests
         [Fact]
         public async Task AdminGetAllPostsAsync_UserNoApprovePermission_ReturnsOwnPosts()
         {
-            // Arrange
             var userId = Guid.NewGuid();
             var user = new AppUser { Id = userId, Email = "author@test.com" };
             var request = CreateValidGetAllPostsRequest();
@@ -118,14 +109,11 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.GetAllPostsAsync(request, userId, false))
                 .ReturnsAsync(fakePageResult);
 
-            // Act
             var result = await _adminPostService.GetAllPostsAsync(request, userId);
 
-            // Assert
-            Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Data);
-            Assert.Equal(4, result.Data.TotalCount);
-            // Verify: repo called with hasApprovePostPermission = false
+            Assert.NotNull(result);
+            Assert.Equal(4, result.TotalCount);
+
             _mockUnitOfWork.Verify(
                 x => x.Posts.GetAllPostsAsync(request, userId, false),
                 Times.Once

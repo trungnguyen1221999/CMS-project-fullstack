@@ -2,6 +2,7 @@ using Application.Constants;
 using Application.Contracts.Auth.Requests;
 using Application.Contracts.Auth.Responses;
 using Application.Services.Token;
+using static Application.Exceptions.CustomException;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using AppUser = Domain.Cores.Identity.User;
@@ -30,9 +31,8 @@ namespace Application.Services.Auth
 
         public async Task<SignInResponse> SignInAsync(SignInRequest request)
         {
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
-            if (existingUser == null)
-                return SignInResponse.Failure(ErrorMessages.User.UserNotFound);
+            var existingUser = await _userManager.FindByEmailAsync(request.Email)
+                ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var result = await _signInManager.CheckPasswordSignInAsync(
                 existingUser,
@@ -41,7 +41,7 @@ namespace Application.Services.Auth
             );
 
             if (!result.Succeeded)
-                return SignInResponse.Failure(ErrorMessages.Auth.InvalidPassword);
+                throw new BadRequestException(ErrorMessages.Auth.InvalidPassword);
 
             var token = await _tokenService.GenerateAccessToken(existingUser);
             var refreshToken = _tokenService.GenerateRefreshToken();
@@ -55,12 +55,9 @@ namespace Application.Services.Auth
 
             var updateUser = await _userManager.UpdateAsync(existingUser);
             if (!updateUser.Succeeded)
-                return SignInResponse.Failure(
-                    ErrorMessages.User.UpdateFailed,
-                    string.Join(" | ", updateUser.Errors.Select(e => e.Description))
-                );
+                throw new BadRequestException(ErrorMessages.User.UpdateFailed);
 
-            return SignInResponse.Success(token, refreshToken);
+            return new SignInResponse { Token = token, RefreshToken = refreshToken };
         }
     }
 }

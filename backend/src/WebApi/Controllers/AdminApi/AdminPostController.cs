@@ -16,7 +16,7 @@ namespace WebApi.Controllers.AdminApi
     [Route("api/admin/posts")]
     [ApiController]
     [Authorize]
-    public class AdminPostController : ApiControllerBase
+    public class AdminPostController : ControllerBase
     {
         private readonly IAdminPostService _postService;
 
@@ -28,112 +28,112 @@ namespace WebApi.Controllers.AdminApi
         //Read
         [HttpGet]
         [HasPermission(Permissions.Posts.View)]
-        public async Task<ActionResult<ReadResponse<PageResult<PostInListResponse>>>> GetAllPosts(
+        public async Task<ActionResult> GetAllPosts(
             [FromQuery] GetAllPostsRequest request
         )
         {
             var currentUserId = User.GetUserId();
             var result = await _postService.GetAllPostsAsync(request, currentUserId);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpGet("{postId}")]
         [HasPermission(Permissions.Posts.View)]
-        public async Task<ActionResult<ReadResponse<Post>>> GetPostById([FromRoute] Guid postId)
+        public async Task<ActionResult> GetPostById([FromRoute] Guid postId)
         {
             var currentUserId = User.GetUserId();
             var result = await _postService.GetPostByIdAsync(postId, currentUserId);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpGet("reject-reason/{postId}")]
         [HasPermission(Permissions.Posts.View)]
-        public async Task<ActionResult<ReadResponse<string>>> GetRejectReason(
+        public async Task<ActionResult> GetRejectReason(
             [FromRoute] Guid postId
         )
         {
             var userId = User.GetUserId();
             var result = await _postService.GetRejectReasonAsync(postId, userId);
-            return ToActionResult(result);
+            return Ok(result);
         }
 
         [HttpGet("activity-logs/{postId}")]
         [Authorize(Posts.Approve)]
-        public async Task<ActionResult<List<PostActivityLog>>> GetActivityLogs(
+        public async Task<ActionResult> GetActivityLogs(
             [FromRoute] Guid postId
         )
         {
             var userId = User.GetUserId();
-            var logs = await _postService.GetActivityLogsAsync(postId, userId);
-            return Ok(logs);
+            var result = await _postService.GetActivityLogsAsync(postId, userId);
+            return Ok(result);
         }
 
         //Write
         [HttpPost]
         [HasPermission(Permissions.Posts.Create)]
-        public async Task<ActionResult<WriteResponse>> CreatePost(
+        public async Task<ActionResult> CreatePost(
             [FromBody] CreateUpdatePostRequest request
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.CreatePostAsync(request, currentUserId);
-            return ToActionResult(result);
+            await _postService.CreatePostAsync(request, currentUserId);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("{postId}")]
         [HasPermission(Permissions.Posts.Edit)]
-        public async Task<ActionResult<WriteResponse>> EditPost(
+        public async Task<ActionResult> EditPost(
             [FromBody] CreateUpdatePostRequest request,
             [FromRoute] Guid postId
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.UpdatePostAsync(request, postId, currentUserId);
-            return ToActionResult(result);
+            await _postService.UpdatePostAsync(request, postId, currentUserId);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpDelete]
         [HasPermission(Permissions.Posts.Delete)]
-        public async Task<ActionResult<WriteResponse>> DeletePost([FromQuery] Guid[] ids)
+        public async Task<ActionResult> DeletePost([FromQuery] Guid[] ids)
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.DeletePostAsync(ids, currentUserId);
-            return ToActionResult(result);
+            await _postService.DeletePostAsync(ids, currentUserId);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("approve/{postId}")]
         [HasPermission(Permissions.Posts.Approve)]
-        public async Task<ActionResult<WriteResponse>> ApprovePost(
+        public async Task<ActionResult> ApprovePost(
             [FromRoute] Guid postId,
             [FromBody] string? note
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.ApprovePostAsync(postId, currentUserId, note);
-            return ToActionResult(result);
+            await _postService.ApprovePostAsync(postId, currentUserId, note);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("reject/{postId}")]
         [HasPermission(Permissions.Posts.Approve)]
-        public async Task<ActionResult<WriteResponse>> RejectPost(
+        public async Task<ActionResult> RejectPost(
             [FromRoute] Guid postId,
             [FromBody] string? note
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.RejectPostAsync(postId, currentUserId, note);
-            return ToActionResult(result);
+            await _postService.RejectPostAsync(postId, currentUserId, note);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("approval-submit/{postId}")]
-        public async Task<ActionResult<WriteResponse>> SubmitPostForApproval(
+        public async Task<ActionResult> SubmitPostForApproval(
             [FromRoute] Guid postId,
             [FromBody] string? note
         )
         {
             var currentUserId = User.GetUserId();
-            var result = await _postService.SubmitPostForApprovalAsync(postId, currentUserId, note);
-            return ToActionResult(result);
+            await _postService.SubmitPostForApprovalAsync(postId, currentUserId, note);
+            return Ok(WriteResponse.Success());
         }
     }
 }

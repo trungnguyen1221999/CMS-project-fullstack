@@ -33,5 +33,17 @@ namespace Application.Services.Permission
             var permissions = GetPermissionsByUserId(userId);
             return permissions.Contains(Permissions.Posts.Delete);
         }
+
+        public bool HasViewActiveCategoryPermission(Guid userId, bool isPostActive)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return (permissions.Contains(Permissions.PostCategories.View) && isPostActive);
+        }
+
+        public bool HasViewAllCategoryPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.PostCategories.Edit);
+        }
     }
 }
