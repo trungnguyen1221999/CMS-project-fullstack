@@ -40,10 +40,34 @@ namespace Application.Services.Permission
             return (permissions.Contains(Permissions.PostCategories.View) && isPostActive);
         }
 
+        public bool HasViewAllCategoriesPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.PostCategories.View);
+        }
+
         public bool HasViewAllCategoryPermission(Guid userId)
         {
             var permissions = GetPermissionsByUserId(userId);
             return permissions.Contains(Permissions.PostCategories.Edit);
+        }
+
+        public bool HasCreateCategoryPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.PostCategories.Create);
+        }
+
+        public bool HasEditCategoryPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.PostCategories.Edit);
+        }
+
+        public bool HasDeleteCategoryPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.PostCategories.Delete);
         }
     }
 }

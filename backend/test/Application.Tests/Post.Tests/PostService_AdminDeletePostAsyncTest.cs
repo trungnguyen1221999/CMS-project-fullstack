@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Application.Constants;
-using Domain.Cores.Content;
 using Moq;
 using Test.Shared.Helpers;
 using static Application.Exceptions.CustomException;
@@ -21,8 +20,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
                 .ReturnsAsync((AppUser?)null);
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.DeletePostAsync(ids, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.DeletePostAsync(ids, userId)
             );
             Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
@@ -34,9 +33,7 @@ namespace Application.Tests.Post.Tests
             var userId = Guid.NewGuid();
             var user = new AppUser { Id = userId, UserName = "admin" };
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockPermissionService.Setup(x => x.HasDeletePostPermission(userId)).Returns(true);
 
@@ -44,8 +41,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.DeletePostAsync(ids, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.DeletePostAsync(ids, userId)
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
@@ -60,9 +57,7 @@ namespace Application.Tests.Post.Tests
             var user = new AppUser { Id = userId, UserName = "admin" };
             var post = CreateFakePost(id1, userId);
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockPermissionService.Setup(x => x.HasDeletePostPermission(userId)).Returns(true);
 
@@ -70,8 +65,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.DeletePostAsync(ids, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.DeletePostAsync(ids, userId)
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
@@ -86,9 +81,7 @@ namespace Application.Tests.Post.Tests
             var user = new AppUser { Id = userId, UserName = "author" };
             var post = CreateFakePost(postId, otherAuthorId);
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockPermissionService.Setup(x => x.HasDeletePostPermission(userId)).Returns(false);
 
@@ -96,8 +89,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<ForbiddenException>(
-                () => _adminPostService.DeletePostAsync(ids, userId)
+            var ex = await Assert.ThrowsAsync<ForbiddenException>(() =>
+                _adminPostService.DeletePostAsync(ids, userId)
             );
             Assert.Equal(ErrorMessages.Post.InsufficientPostPermission, ex.ErrorCode);
         }
@@ -111,9 +104,7 @@ namespace Application.Tests.Post.Tests
             var user = new AppUser { Id = userId, UserName = "author" };
             var post = CreateFakePost(postId, userId);
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockPermissionService.Setup(x => x.HasDeletePostPermission(userId)).Returns(false);
 
@@ -133,10 +124,7 @@ namespace Application.Tests.Post.Tests
                 Times.Once
             );
             _mockUnitOfWork.Verify(x => x.PostTags.ClearAllTagsFromPost(postId), Times.Once);
-            _mockUnitOfWork.Verify(
-                x => x.PostInSeries.ClearPostFromAllSeries(postId),
-                Times.Once
-            );
+            _mockUnitOfWork.Verify(x => x.PostInSeries.ClearPostFromAllSeries(postId), Times.Once);
         }
 
         [Fact]
@@ -149,9 +137,7 @@ namespace Application.Tests.Post.Tests
             var user = new AppUser { Id = userId, UserName = "admin" };
             var post = CreateFakePost(postId, otherAuthorId);
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockPermissionService.Setup(x => x.HasDeletePostPermission(userId)).Returns(true);
 
@@ -176,9 +162,7 @@ namespace Application.Tests.Post.Tests
             var user = new AppUser { Id = userId, UserName = "admin" };
             var post = CreateFakePost(postId, userId);
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockPermissionService.Setup(x => x.HasDeletePostPermission(userId)).Returns(true);
 
@@ -191,8 +175,8 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.PostInSeries.ClearPostFromAllSeries(postId));
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
-            var ex = await Assert.ThrowsAsync<BadRequestException>(
-                () => _adminPostService.DeletePostAsync(ids, userId)
+            var ex = await Assert.ThrowsAsync<BadRequestException>(() =>
+                _adminPostService.DeletePostAsync(ids, userId)
             );
             Assert.Equal(ErrorMessages.Post.DeleteFailed, ex.ErrorCode);
         }

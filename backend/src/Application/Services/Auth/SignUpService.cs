@@ -2,8 +2,8 @@ using Application.Constants;
 using Application.Contracts.Auth.Requests;
 using AutoMapper;
 using Domain.Constants;
-using static Application.Exceptions.CustomException;
 using Microsoft.AspNetCore.Identity;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.Auth

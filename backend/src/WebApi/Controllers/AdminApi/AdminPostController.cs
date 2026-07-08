@@ -1,10 +1,7 @@
 using Application.Contracts.Common;
 using Application.Contracts.Posts.Request;
-using Application.Contracts.Posts.Response;
 using Application.Services.Post;
-using Domain;
 using Domain.Constants;
-using Domain.Cores.Content;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authorization;
@@ -28,9 +25,7 @@ namespace WebApi.Controllers.AdminApi
         //Read
         [HttpGet]
         [HasPermission(Permissions.Posts.View)]
-        public async Task<ActionResult> GetAllPosts(
-            [FromQuery] GetAllPostsRequest request
-        )
+        public async Task<ActionResult> GetAllPosts([FromQuery] GetAllPostsRequest request)
         {
             var currentUserId = User.GetUserId();
             var result = await _postService.GetAllPostsAsync(request, currentUserId);
@@ -48,9 +43,7 @@ namespace WebApi.Controllers.AdminApi
 
         [HttpGet("reject-reason/{postId}")]
         [HasPermission(Permissions.Posts.View)]
-        public async Task<ActionResult> GetRejectReason(
-            [FromRoute] Guid postId
-        )
+        public async Task<ActionResult> GetRejectReason([FromRoute] Guid postId)
         {
             var userId = User.GetUserId();
             var result = await _postService.GetRejectReasonAsync(postId, userId);
@@ -59,9 +52,7 @@ namespace WebApi.Controllers.AdminApi
 
         [HttpGet("activity-logs/{postId}")]
         [Authorize(Posts.Approve)]
-        public async Task<ActionResult> GetActivityLogs(
-            [FromRoute] Guid postId
-        )
+        public async Task<ActionResult> GetActivityLogs([FromRoute] Guid postId)
         {
             var userId = User.GetUserId();
             var result = await _postService.GetActivityLogsAsync(postId, userId);
@@ -71,9 +62,7 @@ namespace WebApi.Controllers.AdminApi
         //Write
         [HttpPost]
         [HasPermission(Permissions.Posts.Create)]
-        public async Task<ActionResult> CreatePost(
-            [FromBody] CreateUpdatePostRequest request
-        )
+        public async Task<ActionResult> CreatePost([FromBody] CreateUpdatePostRequest request)
         {
             var currentUserId = User.GetUserId();
             await _postService.CreatePostAsync(request, currentUserId);
@@ -115,10 +104,7 @@ namespace WebApi.Controllers.AdminApi
 
         [HttpPut("reject/{postId}")]
         [HasPermission(Permissions.Posts.Approve)]
-        public async Task<ActionResult> RejectPost(
-            [FromRoute] Guid postId,
-            [FromBody] string? note
-        )
+        public async Task<ActionResult> RejectPost([FromRoute] Guid postId, [FromBody] string? note)
         {
             var currentUserId = User.GetUserId();
             await _postService.RejectPostAsync(postId, currentUserId, note);

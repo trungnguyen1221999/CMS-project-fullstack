@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using Application.Constants;
 using Application.Contracts.Common;
-using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Domain;
 using Domain.Cores.Content;
@@ -45,8 +44,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _clientPostService.GetPostByIdAsync(postId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _clientPostService.GetPostByIdAsync(postId)
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
@@ -61,8 +60,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _clientPostService.GetPostByIdAsync(postId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _clientPostService.GetPostByIdAsync(postId)
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }

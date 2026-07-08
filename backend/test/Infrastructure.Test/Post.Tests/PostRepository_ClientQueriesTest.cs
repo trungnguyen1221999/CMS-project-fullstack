@@ -1,5 +1,4 @@
 using Application.Contracts.Common;
-using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using AutoMapper;
 using Domain.Cores.Content;

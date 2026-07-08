@@ -5,8 +5,8 @@ using Application.Contracts.Users.Responses;
 using Application.UnitOfWork;
 using AutoMapper;
 using Domain;
-using static Application.Exceptions.CustomException;
 using Microsoft.AspNetCore.Identity;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.User
@@ -24,16 +24,15 @@ namespace Application.Services.User
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<PageResult<UserListItemResponse>> GetAllAsync(
-            PagingRequest request
-        )
+        public async Task<PageResult<UserListItemResponse>> GetAllAsync(PagingRequest request)
         {
             return await _unitOfWork.Users.GetAllWithRolesAsync(request);
         }
 
         public async Task<UserResponse> GetByIdAsync(Guid userId)
         {
-            var user = await _unitOfWork.Users.GetByIdWithRolesAsync(userId)
+            var user =
+                await _unitOfWork.Users.GetByIdWithRolesAsync(userId)
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             return user;
@@ -72,10 +71,7 @@ namespace Application.Services.User
                 throw new NotFoundException(ErrorMessages.User.UserNotFound);
         }
 
-        public async Task ChangeMyPasswordAsync(
-            Guid id,
-            ChangeMyPasswordRequest request
-        )
+        public async Task ChangeMyPasswordAsync(Guid id, ChangeMyPasswordRequest request)
         {
             var user = await GetUserOrThrowAsync(id);
 

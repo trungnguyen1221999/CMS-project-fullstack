@@ -25,7 +25,7 @@ namespace Application.UnitOfWork
             _mapper = mapper;
             Users = new UserRepository(context);
             Posts = new PostRepository(context, _mapper);
-            Categories = new CategoryRepository(context);
+            Categories = new CategoryRepository(context, _mapper);
             Tags = new TagRepository(context);
             PostTags = new PostTagsRepository(context);
             PostInSeries = new PostInSeriesRepository(context);

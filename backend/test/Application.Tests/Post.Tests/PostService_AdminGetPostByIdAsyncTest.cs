@@ -40,8 +40,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.GetPostByIdAsync(postId, userId)
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
@@ -61,8 +61,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
                 .ReturnsAsync((AppUser?)null);
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.GetPostByIdAsync(postId, userId)
             );
             Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
@@ -101,8 +101,8 @@ namespace Application.Tests.Post.Tests
 
             _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.GetPostByIdAsync(postId, userId)
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
@@ -146,8 +146,8 @@ namespace Application.Tests.Post.Tests
 
             _mockPermissionService.Setup(x => x.HasApprovedPostPermission(userId)).Returns(false);
 
-            var ex = await Assert.ThrowsAsync<ForbiddenException>(
-                () => _adminPostService.GetPostByIdAsync(postId, userId)
+            var ex = await Assert.ThrowsAsync<ForbiddenException>(() =>
+                _adminPostService.GetPostByIdAsync(postId, userId)
             );
             Assert.Equal(ErrorMessages.Post.InsufficientPostPermission, ex.ErrorCode);
         }

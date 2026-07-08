@@ -1,9 +1,9 @@
+using Application.Contracts.Posts.Response;
 using AutoMapper;
 using Domain.Cores.Content;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Application.Contracts.Posts.Response;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Infrastructure.Test.Post.Tests
@@ -97,9 +97,7 @@ namespace Infrastructure.Test.Post.Tests
             await _context.SaveChangesAsync();
 
             // Assert
-            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l =>
-                l.PostId == post.Id
-            );
+            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l => l.PostId == post.Id);
             Assert.NotNull(log);
             Assert.Equal(PostStatus.WaitingForApproval, log.FromStatus);
             Assert.Equal(PostStatus.Published, log.ToStatus);
@@ -122,9 +120,7 @@ namespace Infrastructure.Test.Post.Tests
             await _context.SaveChangesAsync();
 
             // Assert
-            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l =>
-                l.PostId == post.Id
-            );
+            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l => l.PostId == post.Id);
             Assert.NotNull(log);
             Assert.Null(log.Note);
         }
@@ -162,9 +158,7 @@ namespace Infrastructure.Test.Post.Tests
             await _context.SaveChangesAsync();
 
             // Assert
-            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l =>
-                l.PostId == post.Id
-            );
+            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l => l.PostId == post.Id);
             Assert.NotNull(log);
             Assert.Equal(PostStatus.WaitingForApproval, log.FromStatus);
             Assert.Equal(PostStatus.Rejected, log.ToStatus);
@@ -204,9 +198,7 @@ namespace Infrastructure.Test.Post.Tests
             await _context.SaveChangesAsync();
 
             // Assert
-            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l =>
-                l.PostId == post.Id
-            );
+            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l => l.PostId == post.Id);
             Assert.NotNull(log);
             Assert.Equal(PostStatus.Draft, log.FromStatus);
             Assert.Equal(PostStatus.WaitingForApproval, log.ToStatus);
@@ -231,9 +223,7 @@ namespace Infrastructure.Test.Post.Tests
             Assert.True(result);
             Assert.Equal(PostStatus.WaitingForApproval, post.Status);
 
-            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l =>
-                l.PostId == post.Id
-            );
+            var log = await _context.PostActivityLogs.FirstOrDefaultAsync(l => l.PostId == post.Id);
             Assert.NotNull(log);
             Assert.Equal(PostStatus.Rejected, log.FromStatus);
             Assert.Equal(PostStatus.WaitingForApproval, log.ToStatus);

@@ -2,9 +2,9 @@ using Application.Constants;
 using Application.Contracts.Auth.Requests;
 using Application.Contracts.Auth.Responses;
 using Application.Services.Token;
-using static Application.Exceptions.CustomException;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.Auth
@@ -31,7 +31,8 @@ namespace Application.Services.Auth
 
         public async Task<SignInResponse> SignInAsync(SignInRequest request)
         {
-            var existingUser = await _userManager.FindByEmailAsync(request.Email)
+            var existingUser =
+                await _userManager.FindByEmailAsync(request.Email)
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var result = await _signInManager.CheckPasswordSignInAsync(

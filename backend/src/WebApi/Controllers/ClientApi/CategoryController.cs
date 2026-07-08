@@ -1,7 +1,6 @@
 ﻿using Application.Contracts.Common;
 using Application.Services.Category;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Extensions;
 
 namespace WebApi.Controllers.ClientApi
 {

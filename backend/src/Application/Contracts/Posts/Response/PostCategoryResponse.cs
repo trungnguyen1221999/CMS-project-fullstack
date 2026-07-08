@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using AutoMapper;
+﻿using AutoMapper;
 using Domain.Commons;
 
 namespace Application.Contracts.Posts.Response

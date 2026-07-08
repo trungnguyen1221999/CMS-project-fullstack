@@ -21,8 +21,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.UpdatePostAsync(request, postId, userId)
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
@@ -47,8 +47,8 @@ namespace Application.Tests.Post.Tests
                     return new List<AppPost> { otherPost }.BuildMockQueryable();
                 });
 
-            var ex = await Assert.ThrowsAsync<BadRequestException>(
-                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            var ex = await Assert.ThrowsAsync<BadRequestException>(() =>
+                _adminPostService.UpdatePostAsync(request, postId, userId)
             );
             Assert.Equal(ErrorMessages.Post.SlugAlreadyExists, ex.ErrorCode);
         }
@@ -78,8 +78,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Categories.Find(It.IsAny<Expression<Func<PostCategory, bool>>>()))
                 .Returns(new List<PostCategory>().BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.UpdatePostAsync(request, postId, userId)
             );
             Assert.Equal(ErrorMessages.Category.CategoryNotFound, ex.ErrorCode);
         }
@@ -170,8 +170,8 @@ namespace Application.Tests.Post.Tests
             _mockUnitOfWork.Setup(x => x.Tags.Add(It.IsAny<Tag>()));
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
-            var ex = await Assert.ThrowsAsync<BadRequestException>(
-                () => _adminPostService.UpdatePostAsync(request, postId, userId)
+            var ex = await Assert.ThrowsAsync<BadRequestException>(() =>
+                _adminPostService.UpdatePostAsync(request, postId, userId)
             );
             Assert.Equal(ErrorMessages.Post.UpdatePostFailed, ex.ErrorCode);
         }

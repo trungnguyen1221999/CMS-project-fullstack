@@ -21,8 +21,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost>().BuildMockQueryable());
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.SubmitPostForApprovalAsync(postId, userId, "please review")
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.SubmitPostForApprovalAsync(postId, userId, "please review")
             );
             Assert.Equal(ErrorMessages.Post.PostNotFound, ex.ErrorCode);
         }
@@ -42,8 +42,8 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.FindByIdAsync(userId.ToString()))
                 .ReturnsAsync((AppUser?)null);
 
-            var ex = await Assert.ThrowsAsync<NotFoundException>(
-                () => _adminPostService.SubmitPostForApprovalAsync(postId, userId, null)
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _adminPostService.SubmitPostForApprovalAsync(postId, userId, null)
             );
             Assert.Equal(ErrorMessages.User.UserNotFound, ex.ErrorCode);
         }
@@ -61,12 +61,10 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
-            var ex = await Assert.ThrowsAsync<ForbiddenException>(
-                () => _adminPostService.SubmitPostForApprovalAsync(postId, userId, null)
+            var ex = await Assert.ThrowsAsync<ForbiddenException>(() =>
+                _adminPostService.SubmitPostForApprovalAsync(postId, userId, null)
             );
             Assert.Equal(ErrorMessages.Post.InsufficientPostPermission, ex.ErrorCode);
         }
@@ -83,9 +81,7 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.SubmitForApproval(post, user, "please review"))
@@ -114,9 +110,7 @@ namespace Application.Tests.Post.Tests
                 .Setup(x => x.Posts.Find(It.IsAny<Expression<Func<AppPost, bool>>>()))
                 .Returns(new List<AppPost> { post }.BuildMockQueryable());
 
-            _mockUserManager
-                .Setup(x => x.FindByIdAsync(userId.ToString()))
-                .ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByIdAsync(userId.ToString())).ReturnsAsync(user);
 
             _mockUnitOfWork
                 .Setup(x => x.Posts.SubmitForApproval(post, user, null))
@@ -124,8 +118,8 @@ namespace Application.Tests.Post.Tests
 
             _mockUnitOfWork.Setup(x => x.CompleteAsync()).ReturnsAsync(0);
 
-            var ex = await Assert.ThrowsAsync<BadRequestException>(
-                () => _adminPostService.SubmitPostForApprovalAsync(postId, userId, null)
+            var ex = await Assert.ThrowsAsync<BadRequestException>(() =>
+                _adminPostService.SubmitPostForApprovalAsync(postId, userId, null)
             );
             Assert.Equal(ErrorMessages.Post.SubmitForApprovalFailed, ex.ErrorCode);
         }

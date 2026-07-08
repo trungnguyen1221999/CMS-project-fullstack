@@ -1,8 +1,8 @@
 ﻿using Application.Constants;
 using Application.Contracts.Users.Requests;
 using Application.Services.Otp;
-using static Application.Exceptions.CustomException;
 using Microsoft.AspNetCore.Identity;
+using static Application.Exceptions.CustomException;
 using AppUser = Domain.Cores.Identity.User;
 
 namespace Application.Services.Auth
@@ -12,10 +12,7 @@ namespace Application.Services.Auth
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailService _emailService;
 
-        public ForgotPasswordService(
-            UserManager<AppUser> userManager,
-            IEmailService emailService
-        )
+        public ForgotPasswordService(UserManager<AppUser> userManager, IEmailService emailService)
         {
             _userManager = userManager;
             _emailService = emailService;
@@ -23,7 +20,8 @@ namespace Application.Services.Auth
 
         public async Task ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email)
+            var user =
+                await _userManager.FindByEmailAsync(request.Email)
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             await _emailService.SendOtpAsync(request.Email);
@@ -31,7 +29,8 @@ namespace Application.Services.Auth
 
         public async Task ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email)
+            var user =
+                await _userManager.FindByEmailAsync(request.Email)
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var isValid = await _emailService.ValidateOtpAsync(request.Email, request.Code);

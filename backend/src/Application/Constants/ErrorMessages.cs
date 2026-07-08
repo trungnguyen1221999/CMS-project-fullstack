@@ -46,6 +46,10 @@ namespace Application.Constants
         {
             public const string CategoryNotFound = "CATEGORY_NOT_FOUND";
             public const string InsufficientPermissions = "INSUFFICIENT_CATEGORY_PERMISSIONS";
+            public const string SlugAlreadyExists = "CATEGORY_SLUG_ALREADY_EXISTS";
+            public const string CreateFailed = "CREATE_CATEGORY_FAILED";
+            public const string UpdateFailed = "UPDATE_CATEGORY_FAILED";
+            public const string DeleteFailed = "DELETE_CATEGORY_FAILED";
         }
 
         public static class Auth

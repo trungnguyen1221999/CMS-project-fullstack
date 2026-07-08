@@ -2,7 +2,6 @@ using Application.Constants;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
 using Application.Helper;
-using static Application.Exceptions.CustomException;
 using Application.Services.Permission;
 using Application.UnitOfWork;
 using AutoMapper;
@@ -10,6 +9,7 @@ using Domain;
 using Domain.Cores.Content;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static Application.Exceptions.CustomException;
 using AppPost = Domain.Cores.Content.Post;
 using AppUser = Domain.Cores.Identity.User;
 
@@ -41,7 +41,8 @@ namespace Application.Services.Post
             Guid currentUserId
         )
         {
-            var user = await _userManager.FindByIdAsync(currentUserId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(currentUserId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var hasApprovePostPermission = _permissionService.HasApprovedPostPermission(user.Id);
@@ -55,10 +56,12 @@ namespace Application.Services.Post
 
         public async Task<AppPost> GetPostByIdAsync(Guid postId, Guid currentUserId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
-            var user = await _userManager.FindByIdAsync(currentUserId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(currentUserId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             if (user.Id == post.AuthorUserId)
@@ -73,25 +76,21 @@ namespace Application.Services.Post
             return post;
         }
 
-        public async Task<List<PostActivityLog>> GetActivityLogsAsync(
-            Guid postId,
-            Guid userId
-        )
+        public async Task<List<PostActivityLog>> GetActivityLogsAsync(Guid postId, Guid userId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
-            var user = await _userManager.FindByIdAsync(userId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             return await _unitOfWork.PostActivityLogs.GetActivityLogsAsync(post, user);
         }
 
         //Write
-        public async Task CreatePostAsync(
-            CreateUpdatePostRequest request,
-            Guid userId
-        )
+        public async Task CreatePostAsync(CreateUpdatePostRequest request, Guid userId)
         {
             var existingPost = await _unitOfWork
                 .Posts.Find(p => p.Slug == request.Slug)
@@ -99,7 +98,8 @@ namespace Application.Services.Post
             if (existingPost != null)
                 throw new BadRequestException(ErrorMessages.Post.SlugAlreadyExists);
 
-            var user = await _userManager.FindByIdAsync(userId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var post = _mapper.Map<CreateUpdatePostRequest, AppPost>(request);
@@ -107,9 +107,10 @@ namespace Application.Services.Post
             post.AuthorUserName = user.UserName;
             post.AuthorName = user.GetFullName();
 
-            var category = await _unitOfWork
-                .Categories.Find(c => c.Id == request.CategoryId)
-                .FirstOrDefaultAsync()
+            var category =
+                await _unitOfWork
+                    .Categories.Find(c => c.Id == request.CategoryId)
+                    .FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Category.CategoryNotFound);
 
             post.CategoryId = category.Id;
@@ -124,13 +125,10 @@ namespace Application.Services.Post
                 throw new BadRequestException(ErrorMessages.Post.CreatePostFailed);
         }
 
-        public async Task UpdatePostAsync(
-            CreateUpdatePostRequest request,
-            Guid postId,
-            Guid userId
-        )
+        public async Task UpdatePostAsync(CreateUpdatePostRequest request, Guid postId, Guid userId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
             var slugExists = await _unitOfWork
@@ -141,9 +139,10 @@ namespace Application.Services.Post
 
             _mapper.Map(request, post);
 
-            var category = await _unitOfWork
-                .Categories.Find(c => c.Id == request.CategoryId)
-                .FirstOrDefaultAsync()
+            var category =
+                await _unitOfWork
+                    .Categories.Find(c => c.Id == request.CategoryId)
+                    .FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Category.CategoryNotFound);
             post.CategoryName = category.Name;
             post.CategorySlug = category.Slug;
@@ -158,7 +157,8 @@ namespace Application.Services.Post
 
         public async Task DeletePostAsync(Guid[] ids, Guid currentUserId)
         {
-            var user = await _userManager.FindByIdAsync(currentUserId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(currentUserId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var hasDeletePostPermission = _permissionService.HasDeletePostPermission(user.Id);
@@ -182,16 +182,14 @@ namespace Application.Services.Post
                 throw new BadRequestException(ErrorMessages.Post.DeleteFailed);
         }
 
-        public async Task ApprovePostAsync(
-            Guid postId,
-            Guid currentUserId,
-            string? note
-        )
+        public async Task ApprovePostAsync(Guid postId, Guid currentUserId, string? note)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
-            var user = await _userManager.FindByIdAsync(currentUserId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(currentUserId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var approved = await _unitOfWork.Posts.Approve(post, user, note);
@@ -203,16 +201,14 @@ namespace Application.Services.Post
                 throw new BadRequestException(ErrorMessages.Post.ApproveFailed);
         }
 
-        public async Task RejectPostAsync(
-            Guid postId,
-            Guid currentUserId,
-            string? note
-        )
+        public async Task RejectPostAsync(Guid postId, Guid currentUserId, string? note)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
-            var user = await _userManager.FindByIdAsync(currentUserId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(currentUserId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             var rejected = await _unitOfWork.Posts.Reject(post, user, note);
@@ -224,16 +220,14 @@ namespace Application.Services.Post
                 throw new BadRequestException(ErrorMessages.Post.RejectFailed);
         }
 
-        public async Task SubmitPostForApprovalAsync(
-            Guid postId,
-            Guid userId,
-            string? note
-        )
+        public async Task SubmitPostForApprovalAsync(Guid postId, Guid userId, string? note)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
-            var user = await _userManager.FindByIdAsync(userId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             if (post.AuthorUserId != userId)
@@ -250,16 +244,21 @@ namespace Application.Services.Post
 
         public async Task<string> GetRejectReasonAsync(Guid postId, Guid userId)
         {
-            var post = await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+            var post =
+                await _unitOfWork.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(ErrorMessages.Post.PostNotFound);
 
-            var user = await _userManager.FindByIdAsync(userId.ToString())
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
                 ?? throw new NotFoundException(ErrorMessages.User.UserNotFound);
 
             if (post.Status != PostStatus.Rejected)
                 throw new BadRequestException(ErrorMessages.Post.PostNotRejected);
 
-            if (post.AuthorUserId != userId && _permissionService.HasApprovedPostPermission(user.Id))
+            if (
+                post.AuthorUserId != userId
+                && _permissionService.HasApprovedPostPermission(user.Id)
+            )
                 throw new ForbiddenException(ErrorMessages.Post.InsufficientPostPermission);
 
             var result = await _unitOfWork.PostActivityLogs.GetRejectReasonAsync(post, user);

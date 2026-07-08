@@ -18,6 +18,19 @@ namespace Infrastructure.Repositories
             _mapper = mapper;
         }
 
+        public async Task<PageResult<PostCategoryResponse>> GetCategoriesPagingAsync(
+            PagingRequest request
+        )
+        {
+            var query = _context.PostCategories.AsQueryable();
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                query = query.Where(x => x.Name.Contains(request.Keyword));
+            }
+
+            return await ToPagedResultAsync(query, request);
+        }
+
         public async Task<PageResult<PostCategoryResponse>> GetActiveCategoriesPagingAsync(
             PagingRequest request
         )

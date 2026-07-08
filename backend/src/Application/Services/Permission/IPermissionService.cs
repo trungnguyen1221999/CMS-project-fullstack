@@ -9,5 +9,10 @@
         bool HasViewAllCategoryPermission(Guid userId);
 
         bool HasViewActiveCategoryPermission(Guid userId, bool isPostActive);
+
+        bool HasViewAllCategoriesPermission(Guid userId);
+        bool HasCreateCategoryPermission(Guid userId);
+        bool HasEditCategoryPermission(Guid userId);
+        bool HasDeleteCategoryPermission(Guid userId);
     }
 }
