@@ -60,6 +60,7 @@ backend/
 │   │   │   └── Permission/            → Permission checking
 │   │   ├── Contracts/                  → DTOs (Requests, Responses)
 │   │   ├── Constants/                  → ErrorMessages, EmailTemplates
+│   │   ├── Exceptions/                 → CustomException (NotFoundException, ForbiddenException, BadRequestException)
 │   │   ├── Repositories/               → Repository interfaces
 │   │   └── UnitOfWork/                 → IUnitOfWork interface
 │   │
@@ -72,6 +73,7 @@ backend/
 │   └── WebApi/                         → Entry Point
 │       ├── Controllers/                → Auth, User, AdminPost
 │       ├── Authorization/              → Permission system
+│       ├── Middlewares/                → GlobalExceptionHandlerMiddleware
 │       └── Extensions/                 → DI, Auth, Serilog, Middleware
 │
 ├── test/
@@ -181,6 +183,54 @@ graph TD
     UoW --> PostTags["IPostTagsRepository"]
     UoW --> Complete["CompleteAsync() → SaveChanges 1 time"]
 ```
+
+---
+
+## Exception Handling
+
+All unhandled exceptions are caught centrally by `GlobalExceptionHandlerMiddleware` (registered as the **first** middleware in the pipeline).
+
+### Custom Exception Hierarchy
+
+```
+CustomException  (abstract, Application.Exceptions)
+├── NotFoundException   → 404 Not Found
+├── ForbiddenException  → 403 Forbidden
+└── BadRequestException → 400 Bad Request
+```
+
+Each subclass carries:
+- `ErrorCode` — machine-readable constant (same format as `ErrorMessages`)
+- `Message` — human-readable description (defaults to `ErrorCode` if omitted)
+
+### Middleware Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant M as GlobalExceptionHandlerMiddleware
+    participant P as Next Middleware / Controller
+
+    C->>M: HTTP Request
+    M->>P: await _next(context)
+    alt CustomException thrown
+        P-->>M: NotFoundException / ForbiddenException / BadRequestException
+        M->>M: Map to 404 / 403 / 400
+        M-->>C: WriteResponse.Failure(errorCode, message)
+    else Unexpected Exception
+        P-->>M: Exception
+        M->>M: Log.Error (Serilog)
+        M-->>C: 500 WriteResponse.Failure(INTERNAL_SERVER_ERROR)
+    end
+```
+
+### When to throw vs. return Failure
+
+| Scenario | Approach |
+|----------|---------|
+| Service method returns result to caller (most cases) | Return `WriteResponse.Failure(errorCode)` |
+| Deep helper / private method that cannot return a result | Throw `CustomException` subclass |
+| Truly unexpected runtime error | Let it bubble — middleware catches it |
 
 ---
 

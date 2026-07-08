@@ -1,75 +1,149 @@
-# Post API
+﻿# Post API
 
 ## Overview
 Post listing and management for both client-side and admin-side APIs.
 
-- Client endpoints are **public** (no authentication required).
-- Admin endpoints require **JWT authentication** and permission checks.
+- Client endpoints (`/api/posts`) are **public** (no authentication required).
+- Admin endpoints (`/api/admin/posts`) require **JWT authentication** and permission checks.
 
-> **Note:** Only endpoints implemented so far are documented below (Delete, Get-by-id, etc. are not yet built).
+## Error Handling
+Services throw `CustomException` subclasses. Errors are caught by `GlobalExceptionHandlerMiddleware` and serialized as:
+```json
+{
+  "isSuccess": false,
+  "errorCode": "ERROR_CODE",
+  "errorMessage": "ERROR_CODE"
+}
+```
+
+| Exception type | HTTP status |
+|----------------|------------|
+| `NotFoundException` | 404 |
+| `ForbiddenException` | 403 |
+| `BadRequestException` | 400 |
 
 ## Endpoints
 
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| GET | /api/posts | No | Get published posts (paged) |
-| GET | /api/posts/category/{categorySlug} | No | Get published posts by category slug |
-| GET | /api/posts/tag/{tagSlug} | No | Get published posts by tag slug |
-| GET | /api/admin/posts | Yes (`Permissions.Posts.View`) | Get posts for current admin/editor/author scope (paged + filters) |
-| POST | /api/admin/posts | Yes (`Permissions.Posts.Create`) | Create a new post |
-| PUT | /api/admin/posts?postId={guid} | Yes (`Permissions.Posts.Edit`) | Update an existing post |
+### Client (Public)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | /api/posts/paging | Get published posts (paged) |
+| GET | /api/posts/{postId} | Get a single published post by ID |
+| GET | /api/posts/category/{categorySlug} | Get published posts by category |
+| GET | /api/posts/tag/{tagSlug} | Get published posts by tag |
+
+### Admin (JWT required)
+
+| Method | Route | Permission | Description |
+|--------|-------|-----------|-------------|
+| GET | /api/admin/posts | `Posts.View` | Get posts scoped to current user role |
+| GET | /api/admin/posts/{postId} | `Posts.View` | Get a single post (access-controlled) |
+| GET | /api/admin/posts/reject-reason/{postId} | `Posts.View` | Get rejection reason of a post |
+| GET | /api/admin/posts/activity-logs/{postId} | `Posts.Approve` | Get activity log of a post |
+| POST | /api/admin/posts | `Posts.Create` | Create a new post |
+| PUT | /api/admin/posts/{postId} | `Posts.Edit` | Update an existing post |
+| DELETE | /api/admin/posts | `Posts.Delete` | Delete posts by IDs |
+| PUT | /api/admin/posts/approve/{postId} | `Posts.Approve` | Approve a post |
+| PUT | /api/admin/posts/reject/{postId} | `Posts.Approve` | Reject a post |
+| PUT | /api/admin/posts/approval-submit/{postId} | JWT only | Submit post for approval |
 
 ---
 
-## GET /api/posts
+## Shared: PagingRequest (query params)
+
+Used by all list endpoints.
+
+| Field | Type | Required | Default |
+|-------|------|----------|---------|
+| Keyword | string | No | null |
+| CurrentPage | int | No | 1 |
+| PageSize | int | No | 10 |
+
+## Shared: PostInListResponse (paged list item)
+
+```json
+{
+  "id": "guid",
+  "name": "string",
+  "slug": "string",
+  "description": "string | null",
+  "thumbnail": "string | null",
+  "viewCount": 0,
+  "categorySlug": "string",
+  "categoryName": "string",
+  "authorUserName": "string",
+  "authorName": "string",
+  "status": 0,
+  "isPaid": false,
+  "royaltyAmount": 0,
+  "paidDate": null
+}
+```
+
+`status` enum: `0 = Draft`, `1 = WaitingForApproval`, `2 = Rejected`, `3 = Published`.
+
+## Shared: Paged response envelope
+
+```json
+{
+  "result": [ ],
+  "currentPage": 1,
+  "pageSize": 10,
+  "totalCount": 0,
+  "totalPages": 0,
+  "hasNextPage": false,
+  "hasPreviousPage": false
+}
+```
+
+---
+
+## GET /api/posts/paging
+
+Returns all published posts, paged.
 
 ### Query
+See [Shared: PagingRequest](#shared-pagingrequest-query-params).
 
-| Field | Type | Required | Default | Validation |
-|-------|------|----------|---------|------------|
-| CurrentPage | int | No | 1 | None |
-| PageSize | int | No | 10 | None |
+### Response
+`200 OK` — [Paged envelope](#shared-paged-response-envelope) of `PostInListResponse`.
+
+**Notes:** Filters to `Status = Published` only.
+
+---
+
+## GET /api/posts/{postId}
+
+Returns the full detail of a single published post.
+
+### Route Params
+
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
 
 ### Response
 `200 OK`
 ```json
 {
-  "isSuccess": true,
-  "data": {
-    "result": [
-      {
-        "id": "guid",
-        "name": "string",
-        "slug": "string",
-        "description": "string | null",
-        "thumbnail": "string | null",
-        "viewCount": 0,
-        "categorySlug": "string",
-        "categoryName": "string",
-        "authorUserName": "string",
-        "authorName": "string",
-        "status": 3,
-        "isPaid": false,
-        "royaltyAmount": 0,
-        "paidDate": null
-      }
-    ],
-    "currentPage": 1,
-    "pageSize": 10,
-    "totalCount": 0,
-    "totalPages": 0,
-    "hasNextPage": false,
-    "hasPreviousPage": false
-  }
+  "id": "guid",
+  "categoryId": "guid",
+  "content": "string | null",
+  "authorUserId": "guid",
+  "source": "string | null",
+  "tags": "string | null",
+  "seoDescription": "string | null",
+  "createdAt": "datetime",
+  "modifiedAt": "datetime"
 }
 ```
 
-> `status` is a numeric enum (`PostStatus`)
-
 ### Errors
-No business errors are returned by service for this endpoint.
 
-**Notes:** Only posts with `Status = Published` are returned.
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found or not published | POST_NOT_FOUND | NotFoundException | 404 |
 
 ---
 
@@ -77,26 +151,17 @@ No business errors are returned by service for this endpoint.
 
 ### Route Params
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| categorySlug | string | Yes | None |
+| Field | Type | Required |
+|-------|------|----------|
+| categorySlug | string | Yes |
 
 ### Query
-
-| Field | Type | Required | Default | Validation |
-|-------|------|----------|---------|------------|
-| CurrentPage | int | No | 1 | None |
-| PageSize | int | No | 10 | None |
+See [Shared: PagingRequest](#shared-pagingrequest-query-params).
 
 ### Response
-`200 OK` — same paged structure as `GET /api/posts`.
+`200 OK` — [Paged envelope](#shared-paged-response-envelope) of `PostInListResponse`.
 
-### Errors
-No business errors are returned by service for this endpoint.
-
-**Notes:**
-- Always filters to `Published` posts.
-- If `categorySlug` is empty, repository logic still returns published posts.
+**Notes:** Filters to `Status = Published` only.
 
 ---
 
@@ -104,138 +169,337 @@ No business errors are returned by service for this endpoint.
 
 ### Route Params
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| tagSlug | string | Yes | None |
+| Field | Type | Required |
+|-------|------|----------|
+| tagSlug | string | Yes |
 
 ### Query
-
-| Field | Type | Required | Default | Validation |
-|-------|------|----------|---------|------------|
-| CurrentPage | int | No | 1 | None |
-| PageSize | int | No | 10 | None |
+See [Shared: PagingRequest](#shared-pagingrequest-query-params).
 
 ### Response
-`200 OK` — same paged structure as `GET /api/posts`.
+`200 OK` — [Paged envelope](#shared-paged-response-envelope) of `PostInListResponse`.
 
-### Errors
-No business errors are returned by service for this endpoint.
-
-**Notes:**
-- Always filters to `Published` posts.
-- Tag match uses `Contains(tagSlug)` on stored tag string.
+**Notes:** Filters to `Status = Published` only. Tag match uses `Contains(tagSlug)` on stored tag string.
 
 ---
 
 ## GET /api/admin/posts
 
 ### Auth
-Requires Bearer token and permission: `Permissions.Posts.View`.
+Bearer token + `Permissions.Posts.View`.
 
 ### Query
 
-| Field | Type | Required | Default | Validation |
-|-------|------|----------|---------|------------|
-| CurrentPage | int | No | 1 | None |
-| PageSize | int | No | 10 | None |
-| Keyword | string | No | null | None |
-| CategoryId | guid | No | null | None |
+| Field | Type | Required | Default |
+|-------|------|----------|---------|
+| Keyword | string | No | null |
+| CurrentPage | int | No | 1 |
+| PageSize | int | No | 10 |
+| CategoryId | guid | No | null |
 
 ### Response
-`200 OK` — paged `PostInListResponse` structure (same shape as public list response).
+`200 OK` — [Paged envelope](#shared-paged-response-envelope) of `PostInListResponse`.
 
 ### Errors
 
-| Condition | Code | HTTP |
-|-----------|------|------|
-| Current user not found | USER_NOT_FOUND | 404 |
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
 
-**Notes:**
-- Data scope depends on current user's permissions:
-  - Has approve-post permission: own posts (all statuses) + others' posts (`WaitingForApproval`, `Published`).
-  - No approve-post permission: only own posts (all statuses).
+**Notes:** Data scope depends on the current user's permissions:
+- **Has approve-post permission** (Editor/Admin): own posts (all statuses) + others' posts with status `WaitingForApproval` or `Published`.
+- **No approve-post permission** (Author): only own posts (all statuses).
+
+---
+
+## GET /api/admin/posts/{postId}
+
+### Auth
+Bearer token + `Permissions.Posts.View`.
+
+### Route Params
+
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
+
+### Response
+`200 OK` — raw `Post` entity.
+
+### Errors
+
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found | POST_NOT_FOUND | NotFoundException | 404 |
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
+| Post is `Draft` and caller is not the author | POST_NOT_FOUND | NotFoundException | 404 |
+| Caller is not author and lacks approve permission | INSUFFICIENT_POST_PERMISSION | ForbiddenException | 403 |
+
+---
+
+## GET /api/admin/posts/reject-reason/{postId}
+
+### Auth
+Bearer token + `Permissions.Posts.View`.
+
+### Route Params
+
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
+
+### Response
+`200 OK` — string (rejection reason text).
+
+### Errors
+
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found | POST_NOT_FOUND | NotFoundException | 404 |
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
+| Post status is not `Rejected` | POST_NOT_REJECTED | BadRequestException | 400 |
+| Caller is not author and lacks approve permission | INSUFFICIENT_POST_PERMISSION | ForbiddenException | 403 |
+| Rejection reason not found in activity log | FAIL_TO_GET_REJECT_REASON | BadRequestException | 400 |
+
+---
+
+## GET /api/admin/posts/activity-logs/{postId}
+
+### Auth
+Bearer token + `Permissions.Posts.Approve`.
+
+### Route Params
+
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
+
+### Response
+`200 OK` — `List<PostActivityLog>`.
+
+### Errors
+
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found | POST_NOT_FOUND | NotFoundException | 404 |
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
 
 ---
 
 ## POST /api/admin/posts
 
 ### Auth
-Requires Bearer token and permission: `Permissions.Posts.Create`.
+Bearer token + `Permissions.Posts.Create`.
 
-### Request
+### Request Body
 
 | Field | Type | Required | Validation |
 |-------|------|----------|------------|
-| Name | string | Required by domain | ⚠️ Not enforced by DTO validation |
-| Slug | string | Required by domain | Must be unique; ⚠️ not enforced by DTO validation |
+| Name | string | Yes* | — |
+| Slug | string | Yes* | Must be globally unique |
 | Description | string | No | MaxLength(500) |
-| Thumbnail | string | No | ⚠️ Not enforced by DTO validation |
-| CategoryId | guid | Required by domain | Category must exist; ⚠️ not enforced by DTO validation |
-| Content | string | No | ⚠️ Not enforced by DTO validation |
-| Source | string | No | ⚠️ Not enforced by DTO validation |
-| Tags | string[] | No | Default: empty array |
-| SeoDescription | string | No | ⚠️ Not enforced by DTO validation |
-
-> ⚠️ Several required-by-domain fields currently have no FluentValidation rule — requests with empty `Name`/`Slug`/`CategoryId` are only caught downstream (e.g. missing category → `CATEGORY_NOT_FOUND`), not rejected upfront as a validation error. Worth adding explicit validators.
+| Thumbnail | string | No | — |
+| CategoryId | guid | Yes* | Category must exist |
+| Content | string | No | — |
+| Source | string | No | — |
+| Tags | string[] | No | Default: `[]` |
+| SeoDescription | string | No | — |
 
 ### Response
-`200 OK` — no data (`WriteResponse.Success()`).
+`200 OK`
+```json
+{ "isSuccess": true }
+```
 
 ### Errors
 
-| Condition | Code | HTTP |
-|-----------|------|------|
-| Slug already exists | SLUG_ALREADY_EXISTS | 400 |
-| Current user not found | USER_NOT_FOUND | 404 |
-| Category not found | CATEGORY_NOT_FOUND | 404 |
-| Save failed | CREATE_POST_FAILED | 400 |
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Slug already exists | SLUG_ALREADY_EXISTS | BadRequestException | 400 |
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
+| Category not found | CATEGORY_NOT_FOUND | NotFoundException | 404 |
+| Save to DB failed | CREATE_POST_FAILED | BadRequestException | 400 |
 
 **Notes:**
-- Author fields (`AuthorUserId`, `AuthorUserName`, `AuthorName`) are set from current user.
-- Category denormalized fields (`CategoryName`, `CategorySlug`) are copied from category entity.
-- Tags are normalized by generated slug; missing tags are auto-created and linked.
+- Author fields (`AuthorUserId`, `AuthorUserName`, `AuthorName`) are populated from current user.
+- Category denormalized fields (`CategoryName`, `CategorySlug`) are copied from the category entity.
+- Tags are slug-normalized; new tags are auto-created and linked via `PostTags`.
 
 ---
 
-## PUT /api/admin/posts?postId={guid}
+## PUT /api/admin/posts/{postId}
 
 ### Auth
-Requires Bearer token and permission: `Permissions.Posts.Edit`.
+Bearer token + `Permissions.Posts.Edit`.
 
-### Query
+### Route Params
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| postId | guid | Yes | Existing post |
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
 
-### Request
-Same body as `POST /api/admin/posts` (same validation gaps apply).
+### Request Body
+Same fields as `POST /api/admin/posts`.
 
 ### Response
-`200 OK` — no data (`WriteResponse.Success()`).
+`200 OK`
+```json
+{ "isSuccess": true }
+```
 
 ### Errors
 
-| Condition | Code | HTTP |
-|-----------|------|------|
-| Post not found | POST_NOT_FOUND | 404 |
-| Slug already exists (another post) | SLUG_ALREADY_EXISTS | 400 |
-| Category not found | CATEGORY_NOT_FOUND | 404 |
-| Save failed | UPDATE_POST_FAILED | 400 |
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found | POST_NOT_FOUND | NotFoundException | 404 |
+| Slug already in use by another post | SLUG_ALREADY_EXISTS | BadRequestException | 400 |
+| Category not found | CATEGORY_NOT_FOUND | NotFoundException | 404 |
+| Save to DB failed | UPDATE_POST_FAILED | BadRequestException | 400 |
 
-**Notes:**
-- Existing post is updated in-place via AutoMapper.
-- Old post-tag links are cleared and re-created from request tags.
+**Notes:** Old post-tag links are cleared and re-created from request tags on every update.
+
+---
+
+## DELETE /api/admin/posts
+
+### Auth
+Bearer token + `Permissions.Posts.Delete`.
+
+### Query
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| ids | guid[] | Yes | Repeat param: `?ids=...&ids=...` |
+
+### Response
+`200 OK`
+```json
+{ "isSuccess": true }
+```
+
+### Errors
+
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
+| Any ID not found / count mismatch | POST_NOT_FOUND | NotFoundException | 404 |
+| Caller tries to delete another author's post without delete permission | INSUFFICIENT_POST_PERMISSION | ForbiddenException | 403 |
+| Save to DB failed | DELETE_POST_FAILED | BadRequestException | 400 |
+
+**Notes:** Post-tag and post-in-series links are also removed for each deleted post.
+
+---
+
+## PUT /api/admin/posts/approve/{postId}
+
+### Auth
+Bearer token + `Permissions.Posts.Approve`.
+
+### Route Params
+
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
+
+### Request Body
+
+| Field | Type | Required |
+|-------|------|----------|
+| note | string | No |
+
+### Response
+`200 OK`
+```json
+{ "isSuccess": true }
+```
+
+### Errors
+
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found | POST_NOT_FOUND | NotFoundException | 404 |
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
+| Approve transition failed (wrong status) | APPROVE_POST_FAILED | BadRequestException | 400 |
+
+---
+
+## PUT /api/admin/posts/reject/{postId}
+
+### Auth
+Bearer token + `Permissions.Posts.Approve`.
+
+### Route Params
+
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
+
+### Request Body
+
+| Field | Type | Required |
+|-------|------|----------|
+| note | string | No |
+
+### Response
+`200 OK`
+```json
+{ "isSuccess": true }
+```
+
+### Errors
+
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found | POST_NOT_FOUND | NotFoundException | 404 |
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
+| Reject transition failed (wrong status) | REJECT_POST_FAILED | BadRequestException | 400 |
+
+---
+
+## PUT /api/admin/posts/approval-submit/{postId}
+
+Submit a post for review (author action).
+
+### Auth
+Bearer token (any authenticated user).
+
+### Route Params
+
+| Field | Type | Required |
+|-------|------|----------|
+| postId | guid | Yes |
+
+### Request Body
+
+| Field | Type | Required |
+|-------|------|----------|
+| note | string | No |
+
+### Response
+`200 OK`
+```json
+{ "isSuccess": true }
+```
+
+### Errors
+
+| Condition | Code | Exception | HTTP |
+|-----------|------|-----------|------|
+| Post not found | POST_NOT_FOUND | NotFoundException | 404 |
+| Current user not found | USER_NOT_FOUND | NotFoundException | 404 |
+| Caller is not the post's author | INSUFFICIENT_POST_PERMISSION | ForbiddenException | 403 |
+| Submit transition failed (wrong status) | SUBMIT_FOR_APPROVAL_FAILED | BadRequestException | 400 |
 
 ---
 
 ## Service Dependencies
 
-| Service/Component | Responsibility |
-|-------------------|---------------|
-| PostService | Orchestrates post read/create/update flow |
-| PostRepository | Query filtering + pagination for post lists |
-| UserManager | Resolve current user info for admin operations |
-| PermissionService | Determine post-approval visibility scope in admin list |
-| UnitOfWork | Coordinates repositories and transaction commit |
-| AutoMapper | Maps request DTOs to post entity and list response |
+| Service | Responsibility |
+|---------|---------------|
+| `IClientPostService` | Public read operations (published posts) |
+| `IAdminPostService` | Admin read + all write/workflow operations |
+| `PostRepository` | Query filtering + pagination |
+| `UserManager` | Resolve current user for admin operations |
+| `IPermissionService` | Determine approval/delete visibility scope |
+| `UnitOfWork` | Coordinates repositories and DB commit |
+| `AutoMapper` | Maps request DTOs <-> entities <-> responses |
