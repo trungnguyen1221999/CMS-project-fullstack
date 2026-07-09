@@ -1,6 +1,7 @@
 ﻿using Application.Contracts.Common;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
+using Application.Contracts.Royaltys.Request;
 using Application.Repositories;
 using AutoMapper;
 using Domain;
@@ -140,6 +141,22 @@ namespace Infrastructure.Repositories
                 CurrentPage = request.CurrentPage,
                 PageSize = request.PageSize,
             };
+        }
+
+        public IQueryable<Post> FilterByUser(AppUser user)
+        {
+            var query = _context.Posts.AsQueryable();
+            query = query.Where(q => q.AuthorUserId == user.Id);
+
+            return query;
+        }
+
+        public IQueryable<Post> FilterByMonth(RoyaltyReportByUserRequest request)
+        {
+            var fromDate = new DateTime(request.FromYear, request.FromMonth, 1);
+            var toDate = new DateTime(request.ToYear, request.ToMonth, 1).AddMonths(1);
+
+            return _context.Posts.Where(q => q.CreatedAt >= fromDate && q.CreatedAt < toDate);
         }
     }
 }

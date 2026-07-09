@@ -52,6 +52,12 @@ namespace Application.Constants
             public const string DeleteFailed = "DELETE_CATEGORY_FAILED";
         }
 
+        public static class Royalty
+        {
+            public const string InsufficientPermissions = "INSUFFICIENT_ROYALTY_PERMISSIONS";
+            public const string InvalidDateRange = "INVALID_DATE_RANGE";
+        }
+
         public static class Auth
         {
             public const string InvalidPassword = "INVALID_PASSWORD";

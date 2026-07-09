@@ -69,5 +69,11 @@ namespace Application.Services.Permission
             var permissions = GetPermissionsByUserId(userId);
             return permissions.Contains(Permissions.PostCategories.Delete);
         }
+
+        public bool HasRoyaltyReportViewPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.Royalty.View);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Application.Contracts.Common;
 using Application.Contracts.Posts.Request;
 using Application.Contracts.Posts.Response;
+using Application.Contracts.Royaltys.Request;
 using Domain;
 using Domain.Cores.Content;
 using Domain.Cores.Identity;
@@ -31,5 +32,8 @@ namespace Application.Repositories
         Task<bool> Reject(Post post, User user, string? note);
 
         Task<bool> SubmitForApproval(Post post, User user, string? note);
+
+        IQueryable<Post> FilterByUser(User user);
+        IQueryable<Post> FilterByMonth(RoyaltyReportByUserRequest request);
     }
 }
