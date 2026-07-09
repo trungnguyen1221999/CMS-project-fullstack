@@ -151,7 +151,7 @@ namespace Infrastructure.Repositories
             return query;
         }
 
-        public IQueryable<Post> FilterByMonth(RoyaltyReportByUserRequest request)
+        public IQueryable<Post> FilterByMonth(RoyaltyReportByUserAndMonthRequest request)
         {
             var fromDate = new DateTime(request.FromYear, request.FromMonth, 1);
             var toDate = new DateTime(request.ToYear, request.ToMonth, 1).AddMonths(1);

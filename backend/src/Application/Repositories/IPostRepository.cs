@@ -34,6 +34,6 @@ namespace Application.Repositories
         Task<bool> SubmitForApproval(Post post, User user, string? note);
 
         IQueryable<Post> FilterByUser(User user);
-        IQueryable<Post> FilterByMonth(RoyaltyReportByUserRequest request);
+        IQueryable<Post> FilterByMonth(RoyaltyReportByUserAndMonthRequest request);
     }
 }

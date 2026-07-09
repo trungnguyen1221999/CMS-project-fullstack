@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Application.Contracts.Royaltys.Request
+﻿namespace Application.Contracts.Royaltys.Request
 {
-    public class RoyaltyReportByUserRequest
+    public class RoyaltyReportByUserAndMonthRequest
     {
         public Guid? UserId { get; set; }
         public int FromMonth { get; set; }

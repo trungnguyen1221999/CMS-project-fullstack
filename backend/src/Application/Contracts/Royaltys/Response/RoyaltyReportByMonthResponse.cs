@@ -1,9 +1,9 @@
 ﻿namespace Application.Contracts.Royaltys.Response
 {
-    public class RoyaltyReportByUserResponse
+    public class RoyaltyReportByMonthResponse
     {
-        public Guid UserId { get; set; }
-        public string UserName { get; set; } = string.Empty;
+        public int Month { get; set; }
+        public int Year { get; set; }
         public int NumberOfDraftPosts { get; set; }
         public int NumberOfWaitingApprovalPosts { get; set; }
         public int NumberOfRejectedPosts { get; set; }

@@ -5,8 +5,16 @@ namespace Application.Services.Royalty
 {
     public interface IRoyaltyService
     {
+        Task<List<RoyaltyReportByUserAndMonthResponse>> GetRoyaltyReportByUserAndMonthAsync(
+            RoyaltyReportByUserAndMonthRequest request,
+            Guid currentUserId
+        );
         Task<List<RoyaltyReportByUserResponse>> GetRoyaltyReportByUserAsync(
-            RoyaltyReportByUserRequest request,
+            RoyaltyReportByUserAndMonthRequest request,
+            Guid currentUserId
+        );
+        Task<List<RoyaltyReportByMonthResponse>> GetRoyaltyReportByMonthAsync(
+            RoyaltyReportByUserAndMonthRequest request,
             Guid currentUserId
         );
     }

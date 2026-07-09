@@ -1,10 +1,7 @@
 ﻿using Application.Contracts.Royaltys.Request;
 using Application.Services.Royalty;
-using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Authorization;
 using WebApi.Extensions;
 
 namespace WebApi.Controllers.AdminApi
@@ -22,13 +19,36 @@ namespace WebApi.Controllers.AdminApi
         }
 
         //Read
+        [HttpGet("report-by-user-and-month")]
+        public async Task<ActionResult> GetRoyaltyReportByUserAndMonth(
+            [FromQuery] RoyaltyReportByUserAndMonthRequest request
+        )
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _royaltyService.GetRoyaltyReportByUserAndMonthAsync(
+                request,
+                currentUserId
+            );
+            return Ok(result);
+        }
+
         [HttpGet("report-by-user")]
         public async Task<ActionResult> GetRoyaltyReportByUser(
-            [FromQuery] RoyaltyReportByUserRequest request
+            [FromQuery] RoyaltyReportByUserAndMonthRequest request
         )
         {
             var currentUserId = User.GetUserId();
             var result = await _royaltyService.GetRoyaltyReportByUserAsync(request, currentUserId);
+            return Ok(result);
+        }
+
+        [HttpGet("report-by-month")]
+        public async Task<ActionResult> GetRoyaltyReportByMonth(
+            [FromQuery] RoyaltyReportByUserAndMonthRequest request
+        )
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _royaltyService.GetRoyaltyReportByMonthAsync(request, currentUserId);
             return Ok(result);
         }
 
