@@ -15,5 +15,6 @@
         bool HasEditCategoryPermission(Guid userId);
         bool HasDeleteCategoryPermission(Guid userId);
         bool HasRoyaltyReportViewPermission(Guid userId);
+        bool HasRoyaltyPayPermission(Guid userId);
     }
 }

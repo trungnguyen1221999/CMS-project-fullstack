@@ -1,5 +1,7 @@
 ﻿using Application.Contracts.Royaltys.Request;
 using Application.Contracts.Royaltys.Response;
+using Domain;
+using Domain.Cores.Royalty;
 
 namespace Application.Services.Royalty
 {
@@ -17,5 +19,12 @@ namespace Application.Services.Royalty
             RoyaltyReportByUserAndMonthRequest request,
             Guid currentUserId
         );
+
+        Task<PageResult<Transaction>> GetTransactionHistoryAsync(
+            TransactionHistoryRequest request,
+            Guid currentUserId
+        );
+
+        Task<bool> PayRoyaltyForUserAsync(Guid fromUserId, Guid toUserId);
     }
 }

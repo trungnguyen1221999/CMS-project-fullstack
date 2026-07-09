@@ -1,7 +1,9 @@
 ﻿using Application.Contracts.Royaltys.Request;
 using Application.Services.Royalty;
+using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Authorization;
 using WebApi.Extensions;
 
 namespace WebApi.Controllers.AdminApi
@@ -52,6 +54,25 @@ namespace WebApi.Controllers.AdminApi
             return Ok(result);
         }
 
+        [HttpGet("transaction-histories")]
+        public async Task<ActionResult> GetTransactionHistory(
+            [FromQuery] TransactionHistoryRequest request
+        )
+        {
+            var currentUserId = User.GetUserId();
+            var result = await _royaltyService.GetTransactionHistoryAsync(request, currentUserId);
+            return Ok(result);
+        }
+
         //Write
+
+        [HttpPost("pay-royalty/{toUserId}")]
+        [HasPermission(Permissions.Royalty.Pay)]
+        public async Task<IActionResult> PayRoyalty(Guid toUserId)
+        {
+            var fromUserId = User.GetUserId();
+            var result = await _royaltyService.PayRoyaltyForUserAsync(fromUserId, toUserId);
+            return Ok(result);
+        }
     }
 }

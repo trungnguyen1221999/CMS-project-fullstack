@@ -56,6 +56,7 @@ namespace Application.Constants
         {
             public const string InsufficientPermissions = "INSUFFICIENT_ROYALTY_PERMISSIONS";
             public const string InvalidDateRange = "INVALID_DATE_RANGE";
+            public const string NoUnpaidPosts = "NO_UNPAID_POSTS";
         }
 
         public static class Auth

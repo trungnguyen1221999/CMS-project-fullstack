@@ -17,6 +17,7 @@ namespace Application.UnitOfWork
         public IPostActivityLogRepository PostActivityLogs { get; }
 
         public IPostInSeriesRepository PostInSeries { get; }
+        public ITransactionRepository Transactions { get; }
         private readonly IMapper _mapper;
 
         public UnitOfWork(ApplicationDbContext context, IMapper mapper)
@@ -29,6 +30,7 @@ namespace Application.UnitOfWork
             Tags = new TagRepository(context);
             PostTags = new PostTagsRepository(context);
             PostInSeries = new PostInSeriesRepository(context);
+            Transactions = new TransactionRepository(context);
             PostActivityLogs = new PostActivityLogRepository(context);
         }
 

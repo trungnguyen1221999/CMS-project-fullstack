@@ -15,6 +15,7 @@ namespace Application.UnitOfWork
         IPostInSeriesRepository PostInSeries { get; }
 
         IPostActivityLogRepository PostActivityLogs { get; }
+        ITransactionRepository Transactions { get; }
         Task<int> CompleteAsync();
     }
 }

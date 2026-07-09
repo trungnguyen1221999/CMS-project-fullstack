@@ -158,5 +158,14 @@ namespace Infrastructure.Repositories
 
             return _context.Posts.Where(q => q.CreatedAt >= fromDate && q.CreatedAt < toDate);
         }
+
+        public async Task<List<Post>> GetListUnpaidPublishPosts(Guid userId)
+        {
+            return await _context.Posts
+                .Where(p => p.AuthorUserId == userId
+                    && p.Status == PostStatus.Published
+                    && !p.IsPaid)
+                .ToListAsync();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Domain.Commons;
 using Domain.Cores.Content;
 using Domain.Cores.Identity;
+using Domain.Cores.Royalty;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ namespace Infrastructure
         public DbSet<Tag> Tags { get; set; }
 
         public DbSet<PostInSeries> PostInSeries { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

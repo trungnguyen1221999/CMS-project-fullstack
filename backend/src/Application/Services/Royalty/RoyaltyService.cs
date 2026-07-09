@@ -3,7 +3,9 @@ using Application.Contracts.Royaltys.Request;
 using Application.Contracts.Royaltys.Response;
 using Application.Services.Permission;
 using Application.UnitOfWork;
+using Domain;
 using Domain.Cores.Content;
+using Domain.Cores.Royalty;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using static Application.Exceptions.CustomException;
@@ -29,7 +31,9 @@ namespace Application.Services.Royalty
             _userManager = userManager;
         }
 
-        public async Task<List<RoyaltyReportByUserAndMonthResponse>> GetRoyaltyReportByUserAndMonthAsync(
+        public async Task<
+            List<RoyaltyReportByUserAndMonthResponse>
+        > GetRoyaltyReportByUserAndMonthAsync(
             RoyaltyReportByUserAndMonthRequest request,
             Guid currentUserId
         )
@@ -159,6 +163,88 @@ namespace Application.Services.Royalty
             }
 
             return query;
+        }
+
+        public async Task<PageResult<Transaction>> GetTransactionHistoryAsync(
+            TransactionHistoryRequest request,
+            Guid currentUserId
+        )
+        {
+            var hasPermission = _permissionService.HasRoyaltyReportViewPermission(currentUserId);
+            if (!hasPermission)
+            {
+                throw new ForbiddenException(ErrorMessages.Royalty.InsufficientPermissions);
+            }
+
+            if (
+                request.FromYear > request.ToYear
+                || (request.FromYear == request.ToYear && request.FromMonth > request.ToMonth)
+            )
+            {
+                throw new BadRequestException(ErrorMessages.Royalty.InvalidDateRange);
+            }
+
+            return await _unitOfWork.Transactions.GetTransactionsPagingAsync(request);
+        }
+
+        public async Task<bool> PayRoyaltyForUserAsync(Guid fromUserId, Guid toUserId)
+        {
+            //check users
+            var fromUser =
+                await _userManager.FindByIdAsync(fromUserId.ToString())
+                ?? throw new NotFoundException(
+                    $"From User: {fromUserId} " + ErrorMessages.User.UserNotFound
+                );
+
+            var toUser =
+                await _userManager.FindByIdAsync(toUserId.ToString())
+                ?? throw new NotFoundException(
+                    $"To User: {toUserId} " + ErrorMessages.User.UserNotFound
+                );
+
+            //check permission
+            var hasPayPermission = _permissionService.HasRoyaltyPayPermission(fromUserId);
+            if (!hasPayPermission)
+            {
+                throw new ForbiddenException(ErrorMessages.Royalty.InsufficientPermissions);
+            }
+
+            //check unpaid posts
+            var unpaidPublishPosts = await _unitOfWork.Posts.GetListUnpaidPublishPosts(toUserId);
+            if (unpaidPublishPosts.Count == 0)
+            {
+                throw new BadRequestException(ErrorMessages.Royalty.NoUnpaidPosts);
+            }
+
+            //update post royalty status and amount
+            decimal totalRoyaltyAmount = 0;
+            foreach (var post in unpaidPublishPosts)
+            {
+                totalRoyaltyAmount += toUser.RoyaltyAmountPerPost;
+                post.IsPaid = true;
+                post.PaidDate = DateTime.UtcNow;
+                post.RoyaltyAmount = toUser.RoyaltyAmountPerPost;
+            }
+            //update user balance
+            toUser.Balance += totalRoyaltyAmount;
+            await _userManager.UpdateAsync(toUser);
+
+            //create transaction
+            _unitOfWork.Transactions.Add(
+                new Transaction()
+                {
+                    FromUserId = fromUserId,
+                    FromUserName = fromUser.UserName,
+
+                    ToUserId = toUserId,
+                    ToUserName = toUser.UserName,
+                    Amount = totalRoyaltyAmount,
+                    TransactionType = TransactionType.RoyaltyPay,
+                    Note = $"{fromUser.UserName} paid royalty to {toUser.UserName}",
+                }
+            );
+            var result = await _unitOfWork.CompleteAsync();
+            return result > 0;
         }
     }
 }

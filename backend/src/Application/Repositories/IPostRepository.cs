@@ -35,5 +35,6 @@ namespace Application.Repositories
 
         IQueryable<Post> FilterByUser(User user);
         IQueryable<Post> FilterByMonth(RoyaltyReportByUserAndMonthRequest request);
+        Task<List<Post>> GetListUnpaidPublishPosts(Guid userId);
     }
 }

@@ -1,8 +1,10 @@
 ﻿using Application.Contracts.Users.Responses;
 using Application.Services.Auth;
+using Application.Services.Category;
 using Application.Services.Otp;
 using Application.Services.Permission;
 using Application.Services.Post;
+using Application.Services.Royalty;
 using Application.Services.Token;
 using Application.Services.User;
 using Application.UnitOfWork;
@@ -29,6 +31,8 @@ namespace WebApi.Extensions
             builder.Services.AddScoped<IPermissionService, PermissionService>();
             builder.Services.AddScoped<IAdminPostService, AdminPostService>();
             builder.Services.AddScoped<IClientPostService, ClientPostService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IRoyaltyService, RoyaltyService>();
 
             return builder;
         }
