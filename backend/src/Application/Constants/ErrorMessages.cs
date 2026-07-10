@@ -59,6 +59,11 @@ namespace Application.Constants
             public const string NoUnpaidPosts = "NO_UNPAID_POSTS";
         }
 
+        public static class Series
+        {
+            public const string SeriesNotFound = "SERIES_NOT_FOUND";
+        }
+
         public static class Auth
         {
             public const string InvalidPassword = "INVALID_PASSWORD";

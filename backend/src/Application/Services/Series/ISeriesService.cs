@@ -11,5 +11,7 @@ namespace Application.Services.Series
     public interface ISeriesService
     {
         Task<PageResult<SeriesInListResponse>> GetPublishSeriesPaging(PagingRequest request);
+
+        Task<Serie> GetPublishSeriesById(Guid id);
     }
 }

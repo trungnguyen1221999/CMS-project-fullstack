@@ -20,9 +20,16 @@ namespace WebApi.Controllers.ClientApi
 
         //Read
         [HttpGet]
-        public async Task<IActionResult> GetSeriesPaging(PagingRequest request)
+        public async Task<IActionResult> GetSeriesPaging([FromQuery] PagingRequest request)
         {
             var result = await _seriesService.GetPublishSeriesPaging(request);
+            return Ok(result);
+        }
+
+        [HttpGet("{seriesId}")]
+        public async Task<IActionResult> GetSeriesById([FromRoute] Guid seriesId)
+        {
+            var result = await _seriesService.GetPublishSeriesById(seriesId);
             return Ok(result);
         }
     }
