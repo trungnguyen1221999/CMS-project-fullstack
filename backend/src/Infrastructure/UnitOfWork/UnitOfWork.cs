@@ -18,6 +18,7 @@ namespace Application.UnitOfWork
 
         public IPostInSeriesRepository PostInSeries { get; }
         public ITransactionRepository Transactions { get; }
+        public ISerieRepository Series { get; }
         private readonly IMapper _mapper;
 
         public UnitOfWork(ApplicationDbContext context, IMapper mapper)
@@ -32,6 +33,7 @@ namespace Application.UnitOfWork
             PostInSeries = new PostInSeriesRepository(context);
             Transactions = new TransactionRepository(context);
             PostActivityLogs = new PostActivityLogRepository(context);
+            Series = new SerieRepository(context, _mapper);
         }
 
         public async Task<int> CompleteAsync()

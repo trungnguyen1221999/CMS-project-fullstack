@@ -234,13 +234,14 @@ namespace Application.Services.Royalty
                 new Transaction()
                 {
                     FromUserId = fromUserId,
-                    FromUserName = fromUser.UserName,
+                    FromUserName = fromUser.UserName ?? fromUser.Email!,
 
                     ToUserId = toUserId,
-                    ToUserName = toUser.UserName,
+                    ToUserName = toUser.UserName ?? toUser.Email!,
                     Amount = totalRoyaltyAmount,
                     TransactionType = TransactionType.RoyaltyPay,
-                    Note = $"{fromUser.UserName} paid royalty to {toUser.UserName}",
+                    Note =
+                        $"{fromUser.UserName ?? fromUser.Email} paid royalty to {toUser.UserName ?? toUser.Email}",
                 }
             );
             var result = await _unitOfWork.CompleteAsync();
