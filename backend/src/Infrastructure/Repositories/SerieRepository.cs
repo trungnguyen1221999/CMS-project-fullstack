@@ -44,5 +44,26 @@ namespace Infrastructure.Repositories
                 PageSize = request.PageSize,
             };
         }
+
+        public async Task<PageResult<SeriesInListResponse>> GetSeriesPaging(PagingRequest request)
+        {
+            var query = _context.Series.AsQueryable();
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                query = query.Where(x => x.Name.Contains(request.Keyword));
+            }
+            var totalCount = await query.CountAsync();
+            query = query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((request.CurrentPage - 1) * request.PageSize)
+                .Take(request.PageSize);
+            return new PageResult<SeriesInListResponse>
+            {
+                Result = await _mapper.ProjectTo<SeriesInListResponse>(query).ToListAsync(),
+                TotalCount = totalCount,
+                CurrentPage = request.CurrentPage,
+                PageSize = request.PageSize,
+            };
+        }
     }
 }

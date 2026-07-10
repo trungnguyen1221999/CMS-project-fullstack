@@ -59,8 +59,8 @@ namespace WebApi.Controllers.AdminApi
         )
         {
             var userId = User.GetUserId();
-            var result = await _categoryService.CreateCategoryAsync(category, userId);
-            return Ok(result);
+            await _categoryService.CreateCategoryAsync(category, userId);
+            return Ok(WriteResponse.Success());
         }
 
         [HttpPut("{categoryId}")]

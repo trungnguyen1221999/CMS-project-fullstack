@@ -62,6 +62,9 @@ namespace Application.Constants
         public static class Series
         {
             public const string SeriesNotFound = "SERIES_NOT_FOUND";
+            public const string InsufficientPermissions = "INSUFFICIENT_SERIES_PERMISSIONS";
+            public const string SlugAlreadyExists = "SERIES_SLUG_ALREADY_EXISTS";
+            public const string CreateFailed = "CREATE_SERIES_FAILED";
         }
 
         public static class Auth

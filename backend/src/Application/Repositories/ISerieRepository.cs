@@ -11,5 +11,6 @@ namespace Application.Repositories
     public interface ISerieRepository : IRepository<Serie, Guid>
     {
         Task<PageResult<SeriesInListResponse>> GetPublishSeriesPaging(PagingRequest request);
+        Task<PageResult<SeriesInListResponse>> GetSeriesPaging(PagingRequest request);
     }
 }

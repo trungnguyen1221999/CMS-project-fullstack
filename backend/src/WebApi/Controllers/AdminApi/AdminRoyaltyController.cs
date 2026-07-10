@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Royaltys.Request;
+﻿using Application.Contracts.Common;
+using Application.Contracts.Royaltys.Request;
 using Application.Services.Royalty;
 using Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
@@ -71,8 +72,8 @@ namespace WebApi.Controllers.AdminApi
         public async Task<IActionResult> PayRoyalty(Guid toUserId)
         {
             var fromUserId = User.GetUserId();
-            var result = await _royaltyService.PayRoyaltyForUserAsync(fromUserId, toUserId);
-            return Ok(result);
+            await _royaltyService.PayRoyaltyForUserAsync(fromUserId, toUserId);
+            return Ok(WriteResponse.Success());
         }
     }
 }

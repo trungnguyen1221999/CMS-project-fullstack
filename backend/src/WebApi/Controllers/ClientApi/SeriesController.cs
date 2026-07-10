@@ -32,5 +32,12 @@ namespace WebApi.Controllers.ClientApi
             var result = await _seriesService.GetPublishSeriesById(seriesId);
             return Ok(result);
         }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllPublishSeries()
+        {
+            var result = await _seriesService.GetAllPublishSeries();
+            return Ok(result);
+        }
     }
 }

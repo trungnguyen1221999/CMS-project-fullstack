@@ -81,5 +81,11 @@ namespace Application.Services.Permission
             var permissions = GetPermissionsByUserId(userId);
             return permissions.Contains(Permissions.Royalty.Pay);
         }
+
+        public bool HasEditSeriesPermission(Guid userId)
+        {
+            var permissions = GetPermissionsByUserId(userId);
+            return permissions.Contains(Permissions.Series.Edit);
+        }
     }
 }
