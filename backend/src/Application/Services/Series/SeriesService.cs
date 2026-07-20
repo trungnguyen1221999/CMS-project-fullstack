@@ -137,5 +137,31 @@ namespace Application.Services.Series
             }
             return serie;
         }
+
+        public async Task<Serie> UpdateSeries(
+            Guid seriesId,
+            CreateUpdateSeriesRequest request,
+            Guid currentUserId
+        )
+        {
+            var existingSerie = await _unitOfWork.Series.GetByIdAsync(seriesId);
+            if (existingSerie == null)
+                throw new NotFoundException(ErrorMessages.Series.SeriesNotFound);
+
+            var hasPermission = _permissionService.HasEditSeriesPermission(currentUserId);
+            if (!hasPermission && existingSerie.AuthorUserId != currentUserId)
+            {
+                throw new ForbiddenException(ErrorMessages.Series.InsufficientPermissions);
+            }
+
+            existingSerie = _mapper.Map(request, existingSerie);
+
+            var result = await _unitOfWork.CompleteAsync();
+            if (result <= 0)
+            {
+                throw new BadRequestException(ErrorMessages.Series.UpdateFailed);
+            }
+            return existingSerie;
+        }
     }
 }

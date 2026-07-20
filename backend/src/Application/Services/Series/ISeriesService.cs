@@ -23,8 +23,13 @@ namespace Application.Services.Series
             Guid currentUserId
         );
 
-        Task<Serie> GetSeriesById(Guid serieId, Guid currentUserId);
+        Task<Serie> GetSeriesById(Guid seriesId, Guid currentUserId);
         Task<List<SeriesInListResponse>> GetAllSeries(Guid currentUserId);
         Task<Serie> CreateSeries(CreateUpdateSeriesRequest request, Guid currentUserId);
+        Task<Serie> UpdateSeries(
+            Guid seriesId,
+            CreateUpdateSeriesRequest request,
+            Guid currentUserId
+        );
     }
 }
